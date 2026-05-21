@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>畑管理アプリ</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Meiryo',sans-serif;background:#f5f2ed;color:#2c1810;font-size:14px}
+.sticky-nav{position:sticky;top:0;z-index:10}
+.hdr{background:#3d2b1f;color:#faf7f2;padding:12px 16px}
+.hdr-t{font-size:16px;font-weight:700}
+.hdr-s{font-size:11px;color:#d5c9bc;margin-top:2px;display:flex;justify-content:space-between;align-items:center}
+.sync-st{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.12)}
+.sync-st.ok{color:#a8d8a8}.sync-st.err{color:#f1948a}.sync-st.wait{color:#f9ca24}.sync-st.off{color:#8c7060}
+.tabs{background:#5c3d28;display:flex;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:70px;padding:11px 4px;background:none;border:none;border-bottom:3px solid transparent;font-family:inherit;font-size:12px;cursor:pointer;color:#d5c9bc;white-space:nowrap;text-align:center;transition:all .15s}
+.tab.on{color:#a8d8a8;border-bottom-color:#6ab04c}
+.body{padding:12px;max-width:800px;margin:0 auto}
+.panel{display:none}.panel.on{display:block}
+.card{background:#fff;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 1px 6px rgba(61,43,31,.1)}
+.card-t{font-size:14px;font-weight:700;color:#3d2b1f;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.rc{background:#faf7f2;border-radius:8px;padding:10px;border:1.5px solid #d5c9bc;cursor:pointer}
+.rc.warn{border-color:#e55039;background:#fff8f7}
+.rc.yellow{border-color:#e67e22;background:#fffbf0}
+.rc.good{border-color:#6ab04c;background:#f4fbf0}
+.rc-name{font-size:15px;font-weight:700;color:#3d2b1f;margin-bottom:4px}
+.rc-crop{font-size:12px;color:#5c4033;margin-bottom:6px;line-height:1.5}
+.rc-w{font-size:11px;color:#e55039;margin-top:4px;font-weight:700}
+.rc-y{font-size:11px;color:#e67e22;margin-top:4px;font-weight:700}
+.rc-g{font-size:11px;color:#27ae60;margin-top:4px;font-weight:700}
+.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;margin-right:3px;font-weight:500}
+.bw{background:#fadbd8;color:#e55039}.bg{background:#d5f5e3;color:#27ae60}.bi{background:#d6eaf8;color:#1a5276}.bn{background:#f0ece8;color:#8c7060}.by{background:#fef5e4;color:#e67e22}
+.fbs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.fb{padding:4px 10px;border-radius:20px;border:1.5px solid #d5c9bc;background:none;font-family:inherit;font-size:12px;cursor:pointer;color:#5c4033;transition:all .15s}
+.fb.on{background:#3d2b1f;color:#faf7f2;border-color:#3d2b1f}
+.tbl-w{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:380px;font-size:12px}
+table th{background:#f0ece8;padding:7px 4px;text-align:center;font-weight:700;border-bottom:1px solid #d5c9bc;color:#3d2b1f}
+table th:first-child{text-align:left;padding-left:8px}
+table td{padding:4px 3px;border-bottom:1px solid #f0ece8;vertical-align:middle}
+.rl{font-size:12px;font-weight:700;padding-left:6px;white-space:nowrap;color:#3d2b1f}
+.cc{border-radius:4px;padding:2px 4px;font-size:10px;white-space:nowrap;margin:1px 0;display:block;text-align:center}
+.cn{background:#fde8e8;color:#c0392b}.ca{background:#e8f8e8;color:#1e8449}.cm{background:#e8f4fd;color:#1a5276}.cu{background:#fef9e7;color:#7d6608}.ci{background:#eafaf1;color:#1e8449}.ch{background:#f5eef8;color:#6c3483}.co{background:#fef5e7;color:#935116}.cs{background:#d5f5e3;color:#1e8449}.cb{background:#fdedec;color:#922b21}.ck{background:#f4f6f7;color:#95a5a6;font-style:italic}.cx{background:#f8f9fa;color:#566573}
+.fg{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+label{font-size:12px;color:#5c4033;font-weight:700}
+input,select,textarea{padding:8px 10px;border-radius:8px;border:1.5px solid #d5c9bc;font-family:inherit;font-size:13px;background:#fff;color:#2c1810;width:100%;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#4a7c59}
+textarea{min-height:60px;resize:vertical}
+.form2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.full{grid-column:1/-1}
+.btn-p{display:block;width:100%;padding:14px;border-radius:8px;border:none;background:#4a7c59;color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px;-webkit-tap-highlight-color:transparent}
+.btn-d{padding:6px 10px;border-radius:6px;border:1px solid #fadbd8;background:#fadbd8;color:#e55039;font-family:inherit;font-size:11px;cursor:pointer;white-space:nowrap;flex:none}
+.ri{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 10px;border-radius:8px;background:#faf7f2;margin-bottom:7px;border-left:3px solid #d5c9bc;gap:8px}
+.ri.t播種{border-left-color:#27ae60}.ri.t苗植え付け{border-left-color:#1abc9c}.ri.t追肥{border-left-color:#f39c12}.ri.t農薬{border-left-color:#e55039}.ri.t殺菌剤{border-left-color:#8e44ad}.ri.t土作り{border-left-color:#8b5e3c}.ri.tメンテナンス{border-left-color:#2980b9}.ri.tその他{border-left-color:#95a5a6}.ri.t育苗{border-left-color:#16a085}.ri.t苗購入{border-left-color:#8e44ad}.ri.t種購入{border-left-color:#27ae60}.ri.t撤収・片付け{border-left-color:#c0392b}.ri.t収穫{border-left-color:#f1c40f}
+.rm{font-size:11px;color:#8c7060;margin-top:2px}
+.rn{font-size:12px;color:#5c4033;margin-top:3px}
+.al{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:8px;margin-bottom:8px}
+.al.hi{background:#fadbd8;border:1px solid #f1948a}.al.mi{background:#fef9e7;border:1px solid #f9ca24}.al.lo{background:#d5f5e3;border:1px solid #a9dfbf}
+.al-t{font-size:13px;font-weight:700;color:#2c1810}.al-d{font-size:12px;color:#5c4033;margin-top:3px}
+.chip-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.chip{padding:4px 10px;border-radius:20px;font-size:12px;background:#f0ece8;border:1px solid #d5c9bc;color:#5c4033}
+.empty{text-align:center;padding:24px;color:#8c7060;font-size:13px}
+.mo-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;align-items:flex-end;justify-content:center}
+.mo-ov.on{display:flex}
+.mo{background:#fff;border-radius:16px 16px 0 0;padding:16px;width:100%;max-width:540px;max-height:72vh;overflow-y:auto}
+.mo-t{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;color:#3d2b1f}
+.mo-x{background:none;border:none;font-size:22px;cursor:pointer;color:#8c7060;padding:0;line-height:1}
+.hr{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #f0ece8;font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.d春{background:#f9ca24}.d夏{background:#e55039}.d秋{background:#e67e22}.d冬{background:#3498db}
+.pot-extra{grid-column:1/-1;display:none}
+.pot-extra.show{display:block}
+.tl-scroll{overflow:auto;max-height:72vh;border-radius:8px}
+.tl-scroll table th{position:sticky;top:0;z-index:2;background:#f0ece8;white-space:nowrap}
+.tl-scroll table td.tl-fix,.tl-scroll table th.tl-fix{position:sticky;left:0;z-index:3;background:#fff;box-shadow:2px 0 4px rgba(61,43,31,.08)}
+.tl-scroll table th.tl-fix{background:#f0ece8;z-index:4}
+.tl-scroll table tfoot th{position:sticky;bottom:0;z-index:2;background:#f0ece8}
+.tl-scroll table tfoot th.tl-fix{z-index:4}
+.tettai-extra{grid-column:1/-1;display:none}
+.tettai-extra.show{display:block}
+.pot-inner{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tag-反省{background:#fce8e8;border-radius:3px;padding:1px 4px}
+.tag-来年{background:#e8f0fc;border-radius:3px;padding:1px 4px}
+.tag-成功{background:#e8fce8;border-radius:3px;padding:1px 4px}
+@media print{.tabs,.hdr,.fbs,button{display:none!important}.panel{display:block!important}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="sticky-nav">
+<div class="hdr">
+  <div class="hdr-t">🌱 畑管理アプリ</div>
+  <div class="hdr-s">
+    <span>輪作・散布・アラート管理</span>
+    <span class="sync-st off" id="sync-status" onclick="clearPendingIfErr()" style="cursor:default">未接続</span>
+  </div>
+</div>
+<div class="tabs">
+  <button class="tab on" onclick="showTab('check',this)">連作チェック</button>
+  <button class="tab" onclick="showTab('tl',this)">予定</button>
+  <button class="tab" onclick="showTab('rec',this)">作業記録</button>
+  <button class="tab" onclick="showTab('alert',this)">アラート</button>
+  <button class="tab" onclick="showTab('plan',this)">作業計画</button>
+  <button class="tab" onclick="showTab('memo',this)">📋 反省メモ</button>
+</div>
+</div>
+<div class="body">
+
+<div id="p-check" class="panel on">
+  <div class="card">
+    <div class="card-t">連作チェック</div>
+    <div class="fbs" id="f-check">
+      <button class="fb on" onclick="filterR('all',this)">すべて</button>
+      <button class="fb" onclick="filterR('warn',this)">🔴 要注意</button>
+      <button class="fb" onclick="filterR('yellow',this)">🟡 注意</button>
+      <button class="fb" onclick="filterR('ok',this)">✅ 問題なし</button>
+    </div>
+    <div class="grid" id="ridge-grid"></div>
+  </div>
+</div>
+
+<div id="p-tl" class="panel">
+  <div id="tl-cards"></div>
+</div>
+
+<div id="p-rec" class="panel">
+  <div class="card">
+    <div class="card-t">作業記録を追加</div>
+    <div class="form2">
+      <div class="fg"><label>日付</label><input type="date" id="r-date"></div>
+      <div class="fg"><label>畝</label><select id="r-ridge" onchange="onRidgeChange()"></select></div>
+      <div class="fg"><label>種別</label>
+        <select id="r-type" onchange="onTypeChange()">
+          <option>播種</option><option>苗植え付け</option><option>苗購入</option><option>種購入</option><option>土作り</option>
+          <option>追肥</option><option>農薬</option><option>殺菌剤</option>
+          <option>メンテナンス</option><option>撤収・片付け</option><option>収穫</option><option>その他</option><option>育苗</option>
+        </select>
+      </div>
+      <div class="fg"><label>作物 / 資材名</label>
+        <input type="text" id="r-crop" placeholder="例：ピーマン" list="crop-list" autocomplete="off">
+        <datalist id="crop-list"></datalist>
+      </div>
+      <div class="fg full"><label>メモ</label><textarea id="r-note" placeholder="希釈倍数、天気など"></textarea>
+        <div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap">
+          <button type="button" onclick="insertTag('【反省】')" style="padding:4px 10px;border-radius:20px;border:1.5px solid #f1948a;background:#fce8e8;color:#c0392b;font-family:inherit;font-size:12px;cursor:pointer">🔴 反省</button>
+          <button type="button" onclick="insertTag('【来年】')" style="padding:4px 10px;border-radius:20px;border:1.5px solid #aed6f1;background:#e8f0fc;color:#1a5276;font-family:inherit;font-size:12px;cursor:pointer">🔵 来年</button>
+          <button type="button" onclick="insertTag('【成功】')" style="padding:4px 10px;border-radius:20px;border:1.5px solid #a9dfbf;background:#e8fce8;color:#1e8449;font-family:inherit;font-size:12px;cursor:pointer">✅ 成功</button>
+        </div>
+      </div>
+      <div class="pot-extra" id="pot-fields">
+        <div class="pot-inner">
+          <div class="fg"><label>ポット数</label><input type="number" id="r-pots" placeholder="例：6" inputmode="numeric" min="0"></div>
+          <div class="fg"><label>定植予定本数</label><input type="number" id="r-transplants" placeholder="例：4" inputmode="numeric" min="0"></div>
+          <div class="fg full"><label>育苗メモ（発芽状況など）</label><textarea id="r-pot-note" placeholder="例：発芽率が悪いため追加播種"></textarea></div>
+        </div>
+      </div>
+      <div class="tettai-extra" id="tettai-fields">
+        <div class="pot-inner">
+          <div class="fg full"><label>予定表に反映する終了季節</label>
+            <select id="r-end-season"><option>春</option><option>夏</option><option>秋</option><option>冬</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-p" id="btn-submit" onclick="addRec()">記録する</button>
+    <button id="btn-cancel" onclick="cancelEdit()" style="display:none;width:100%;padding:10px;border-radius:8px;border:1.5px solid #d5c9bc;background:#f0ece8;color:#5c4033;font-family:inherit;font-size:14px;cursor:pointer;margin-top:6px">キャンセル</button>
+  </div>
+  <div class="card">
+    <div class="card-t">作業履歴</div>
+    <div class="fbs" id="f-rec">
+      <button class="fb on" onclick="filterRec('all',this)">すべて</button>
+      <button class="fb" onclick="filterRec('播種',this)">播種</button>
+      <button class="fb" onclick="filterRec('苗植え付け',this)">苗植え付け</button>
+      <button class="fb" onclick="filterRec('土作り',this)">土作り</button>
+      <button class="fb" onclick="filterRec('追肥',this)">追肥</button>
+      <button class="fb" onclick="filterRec('メンテナンス',this)">メンテナンス</button>
+      <button class="fb" onclick="filterRec('農薬',this)">農薬</button>
+      <button class="fb" onclick="filterRec('殺菌剤',this)">殺菌剤</button>
+      <button class="fb" onclick="filterRec('苗購入',this)">苗購入</button>
+      <button class="fb" onclick="filterRec('種購入',this)">種購入</button>
+      <button class="fb" onclick="filterRec('育苗',this)">育苗</button>
+      <button class="fb" onclick="filterRec('撤収・片付け',this)">撤収・片付け</button>
+      <button class="fb" onclick="filterRec('収穫',this)">収穫</button>
+    </div>
+    <div id="rec-list"></div>
+  </div>
+</div>
+
+<div id="p-alert" class="panel">
+  <div class="card"><div class="card-t">現在のアラート</div><div id="al-list"></div></div>
+  <div class="card"><div class="card-t">今月の植え付け目安</div><div id="pl-guide"></div></div>
+</div>
+
+</div>
+
+<div id="p-plan" class="panel">
+  <div class="card">
+    <div class="card-t">🪴 育苗中 → 定植タイミング</div>
+    <div id="nursery-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-t">📋 やるべき作業 4/20〜5/20</div>
+    <div id="plan-list"></div>
+  </div>
+</div>
+
+<div id="p-memo" class="panel">
+  <div class="card">
+    <div class="card-t">📋 反省・来年メモ一覧</div>
+    <div class="fbs" id="f-memo">
+      <button class="fb on" onclick="filterMemo('all',this)">すべて</button>
+      <button class="fb" onclick="filterMemo('反省',this)">🔴 反省</button>
+      <button class="fb" onclick="filterMemo('来年',this)">🔵 来年</button>
+      <button class="fb" onclick="filterMemo('成功',this)">✅ 成功</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:4px;font-size:12px;color:#5c4033;font-weight:700">
+        <span>期間</span>
+        <input type="date" id="memo-from" style="width:130px;padding:5px 7px;font-size:12px" oninput="renderMemo()">
+        <span>〜</span>
+        <input type="date" id="memo-to" style="width:130px;padding:5px 7px;font-size:12px" oninput="renderMemo()">
+        <button onclick="document.getElementById('memo-from').value='';document.getElementById('memo-to').value='';renderMemo();" style="padding:5px 10px;border-radius:6px;border:1.5px solid #d5c9bc;background:#f0ece8;font-family:inherit;font-size:11px;cursor:pointer;white-space:nowrap">クリア</button>
+      </div>
+    </div>
+    <button onclick="window.print()" style="margin-bottom:10px;padding:6px 14px;border-radius:6px;border:1.5px solid #d5c9bc;background:#f0ece8;font-family:inherit;font-size:12px;cursor:pointer">🖨 印刷</button>
+    <div id="memo-list"></div>
+  </div>
+</div>
+
+<div class="mo-ov" id="modal" onclick="closeMo(event)">
+  <div class="mo">
+    <div class="mo-t"><span id="mo-title"></span><button class="mo-x" onclick="closeMo()">✕</button></div>
+    <div id="mo-body"></div>
+  </div>
+</div>
+
+<script>
+/*
+==============================================
+【Google Sheets 連携 初回設定手順】
+
+■ステップ1：Google スプレッドシートを準備
+  1. https://sheets.google.com で新しいスプレッドシートを作成
+  2. シート名（タブ）を「作業記録」に変更
+  3. URLの「/d/」と「/edit」の間の文字列がスプレッドシートIDです
+     例：https://docs.google.com/spreadsheets/d/【ここがID】/edit
+
+■ステップ2：Google Apps Script を設定
+  1. スプレッドシートのメニュー → 拡張機能 → Apps Script
+  2. 表示されているコードをすべて削除して以下を貼り付けて保存（Ctrl+S）：
+
+----- GAS コード（ここからコピー）-----
+
+var SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID'; // ←ステップ1のIDに置き換え
+var SHEET_NAME = '作業記録';
+var HEADERS = ['id','date','ridge','type','crop','note','pots','transplants','potNote'];
+
+function doGet(e) {
+  var p = e.parameter || {};
+  var sheet = getSheet();
+  ensureHeader(sheet);
+
+  if (p.action === 'add') {
+    sheet.appendRow([
+      p.id || '', p.date || '', p.ridge || '', p.type || '', p.crop || '',
+      p.note || '', p.pots || '', p.transplants || '', p.potNote || ''
+    ]);
+    return json({ok:true}, p.callback);
+  }
+
+  if (p.action === 'del') {
+    var vals = sheet.getDataRange().getValues();
+    for (var i = vals.length - 1; i >= 1; i--) {
+      if (String(vals[i][0]) === String(p.id)) {
+        sheet.deleteRow(i + 1);
+        return json({ok:true}, p.callback);
+      }
+    }
+    return json({ok:true, alreadyDeleted:true}, p.callback);
+  }
+
+  return json(readRows(sheet), p.callback);
+}
+
+function doPost(e) {
+  var body = JSON.parse(e.postData.contents || '{}');
+  var sheet = getSheet();
+  ensureHeader(sheet);
+
+  if (body.action === 'add') {
+    var r = body.record || {};
+    sheet.appendRow([r.id,r.date,r.ridge,r.type,r.crop,r.note||'',r.pots||'',r.transplants||'',r.potNote||'']);
+    return json({ok:true});
+  }
+
+  if (body.action === 'del') {
+    var vals = sheet.getDataRange().getValues();
+    for (var i = vals.length - 1; i >= 1; i--) {
+      if (String(vals[i][0]) === String(body.id)) {
+        sheet.deleteRow(i + 1);
+        return json({ok:true});
+      }
+    }
+    return json({ok:true, alreadyDeleted:true});
+  }
+
+  return json({ok:false, error:'unknown action'});
+}
+
+function getSheet() {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  return ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+}
+
+function ensureHeader(sheet) {
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(HEADERS);
+    return;
+  }
+  var first = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
+  if (String(first[0]) !== 'id') sheet.insertRows(1), sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+}
+
+function readRows(sheet) {
+  var data = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+  var h = data[0];
+  return data.slice(1).filter(function(r){ return r[0] !== ''; }).map(function(r) {
+    var o = {}; h.forEach(function(k, i) { o[k] = r[i]; }); return o;
+  });
+}
+
+function json(d, callback) {
+  var body = JSON.stringify(d);
+  if (callback) {
+    return ContentService.createTextOutput(callback + '(' + body + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(body)
+    .setMimeType(ContentService.MimeType.JSON);
+}
+----- GAS コード（ここまで）-----
+
+■ステップ3：Web App としてデプロイ
+  1. Apps Script 画面の右上「デプロイ」→「新しいデプロイ」
+  2. 種類：「ウェブアプリ」を選択
+  3. 設定：
+       次のユーザーとして実行 → 自分
+       アクセスできるユーザー → 全員
+  4. 「デプロイ」ボタンをクリック
+  5. 表示される「ウェブアプリのURL」をコピー
+
+■ステップ4：このファイルのCONFIG.GAS_URL にURLを貼り付ける
+
+■ステップ5：家族全員がこのHTMLファイルを開けばデータを共有できます
+==============================================
+*/
+
+// ========================================
+// 設定（ここを編集してください）
+// ========================================
+var CONFIG = {
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbxJmMotDT9_O1LcyMdNzv0A08VzmRBm-bTYa9rdhZqDFaHvLa9p-3CmTSqG6zJ3CPa32A/exec'  // Google Apps Script WebアプリURL
+};
+
+// ========================================
+// 作付け履歴データ（変更不要）
+// ========================================
+var RAW=[
+  {畝:'B2',年:2024,季節:'春',作物:'玉ねぎ',科:'ヒガンバナ科'},
+  {畝:'B2',年:2024,季節:'夏',作物:'休耕',科:null},
+  {畝:'B2',年:2024,季節:'冬',作物:'休耕',科:null},
+  {畝:'B2',年:2025,季節:'春',作物:'イチゴ',科:'バラ科'},
+  {畝:'B2',年:2025,季節:'夏',作物:'イチゴ',科:'バラ科'},
+  {畝:'B2',年:2025,季節:'秋',作物:'大根',科:'アブラナ科'},
+  {畝:'B2',年:2025,季節:'秋',作物:'白菜',科:'アブラナ科'},
+  {畝:'B2',年:2025,季節:'冬',作物:'大根',科:'アブラナ科'},
+  {畝:'B2',年:2025,季節:'冬',作物:'白菜',科:'アブラナ科'},
+  {畝:'B2',年:2026,季節:'春',作物:'こどもピーマン',科:'ナス科'},
+  {畝:'B2',年:2026,季節:'春',作物:'ししとう',科:'ナス科'},
+  {畝:'B2',年:2026,季節:'春',作物:'とうがらし',科:'ナス科'},
+  {畝:'B2',年:2026,季節:'夏',作物:'こどもピーマン',科:'ナス科'},
+  {畝:'B2',年:2026,季節:'夏',作物:'ししとう',科:'ナス科'},
+  {畝:'B2',年:2026,季節:'夏',作物:'とうがらし',科:'ナス科'},
+  {畝:'A1',年:2024,季節:'夏',作物:'ミニトマト',科:'ナス科'},
+  {畝:'A1',年:2025,季節:'春',作物:'ブロッコリー',科:'アブラナ科'},
+  {畝:'A1',年:2025,季節:'夏',作物:'ブロッコリー',科:'アブラナ科'},
+  {畝:'A1',年:2025,季節:'夏',作物:'ミニトマト',科:'ナス科'},
+  {畝:'A1',年:2025,季節:'秋',作物:'玉ねぎ',科:'ヒガンバナ科'},
+  {畝:'A1',年:2025,季節:'冬',作物:'玉ねぎ',科:'ヒガンバナ科'},
+  {畝:'A1',年:2026,季節:'春',作物:'玉ねぎ',科:'ヒガンバナ科'},
+  {畝:'A1',年:2026,季節:'夏',作物:'とうもろこし',科:'イネ科'},
+  {畝:'A2',年:2024,季節:'夏',作物:'ミニトマト',科:'ナス科'},
+  {畝:'A2',年:2025,季節:'春',作物:'ソラマメ',科:'マメ科'},
+  {畝:'A2',年:2025,季節:'春',作物:'グリーンピース',科:'マメ科'},
+  {畝:'A2',年:2025,季節:'夏',作物:'長芋',科:'ヤマノイモ科'},
+  {畝:'A2',年:2025,季節:'夏',作物:'オクラ',科:'アオイ科'},
+  {畝:'A2',年:2025,季節:'秋',作物:'長芋',科:'ヤマノイモ科'},
+  {畝:'A2',年:2025,季節:'秋',作物:'オクラ',科:'アオイ科'},
+  {畝:'A2',年:2025,季節:'冬',作物:'なばな',科:'アブラナ科'},
+  {畝:'A2',年:2026,季節:'春',作物:'ネギ苗',科:'ヒガンバナ科'},
+  {畝:'A2',年:2026,季節:'春',作物:'スティックセニョール',科:'アブラナ科'},
+  {畝:'A2',年:2026,季節:'春',作物:'なばな',科:'アブラナ科'},
+  {畝:'A2',年:2026,季節:'夏',作物:'かぼちゃ',科:'ウリ科'},
+  {畝:'A3',年:2024,季節:'夏',作物:'とうもろこし',科:'イネ科'},
+  {畝:'A3',年:2024,季節:'冬',作物:'ブロッコリー',科:'アブラナ科'},
+  {畝:'A3',年:2025,季節:'春',作物:'ブロッコリー',科:'アブラナ科'},
+  {畝:'A3',年:2025,季節:'夏',作物:'ブロッコリー',科:'アブラナ科'},
+  {畝:'A3',年:2025,季節:'夏',作物:'とうもろこし',科:'イネ科'},
+  {畝:'A3',年:2025,季節:'秋',作物:'ほうれん草',科:'アカザ科'},
+  {畝:'A3',年:2025,季節:'秋',作物:'イチゴ',科:'バラ科'},
+  {畝:'A3',年:2025,季節:'冬',作物:'ほうれん草',科:'アカザ科'},
+  {畝:'A3',年:2025,季節:'冬',作物:'イチゴ',科:'バラ科'},
+  {畝:'A3',年:2026,季節:'春',作物:'ほうれん草',科:'アカザ科'},
+  {畝:'A3',年:2026,季節:'春',作物:'イチゴ',科:'バラ科'},
+  {畝:'A3',年:2026,季節:'夏',作物:'ほうれん草',科:'アカザ科'},
+  {畝:'A3',年:2026,季節:'夏',作物:'イチゴ',科:'バラ科'},
+  {畝:'A4',年:2024,季節:'春',作物:'エダマメ',科:'マメ科'},
+  {畝:'A4',年:2024,季節:'夏',作物:'ズッキーニ',科:'ウリ科'},
+  {畝:'A4',年:2024,季節:'冬',作物:'チンゲンサイ',科:'アブラナ科'},
+  {畝:'A4',年:2024,季節:'冬',作物:'ミズナ',科:'アブラナ科'},
+  {畝:'A4',年:2024,季節:'冬',作物:'大根',科:'アブラナ科'},
+  {畝:'A4',年:2025,季節:'春',作物:'じゃがいも',科:'ナス科'},
+  {畝:'A4',年:2025,季節:'夏',作物:'枝豆',科:'マメ科'},
+  {畝:'A4',年:2025,季節:'秋',作物:'イタリアンライグラス',科:'イネ科'},
+  {畝:'A4',年:2025,季節:'冬',作物:'イタリアンライグラス',科:'イネ科'},
+  {畝:'A4',年:2026,季節:'春',作物:'イタリアンライグラス',科:'イネ科'},
+  {畝:'A4',年:2026,季節:'夏',作物:'地まめ',科:'マメ科'},
+  {畝:'A5',年:2026,季節:'春',作物:'イタリアンライグラス',科:'イネ科'},
+  {畝:'A5',年:2026,季節:'夏',作物:'地まめ',科:'マメ科'},
+  {畝:'A7',年:2026,季節:'春',作物:'休耕',科:null},
+  {畝:'A7',年:2026,季節:'夏',作物:'休耕',科:null},
+  {畝:'A8',年:2026,季節:'春',作物:'休耕',科:null},
+  {畝:'A8',年:2026,季節:'夏',作物:'休耕',科:null},
+  {畝:'A6',年:2026,季節:'春',作物:'トマト',科:'ナス科'},
+  {畝:'A6',年:2026,季節:'春',作物:'ナス',科:'ナス科'},
+  {畝:'A6',年:2026,季節:'春',作物:'ピーマン',科:'ナス科'},
+  {畝:'A6',年:2026,季節:'春',作物:'きゅうり',科:'ウリ科'},
+  {畝:'A6',年:2026,季節:'夏',作物:'トマト',科:'ナス科'},
+  {畝:'A6',年:2026,季節:'夏',作物:'ナス',科:'ナス科'},
+  {畝:'A6',年:2026,季節:'夏',作物:'ピーマン',科:'ナス科'},
+  {畝:'A6',年:2026,季節:'夏',作物:'きゅうり',科:'ウリ科'},
+  {畝:'A9',年:2025,季節:'夏',作物:'地まめ',科:'マメ科'},
+  {畝:'A9',年:2025,季節:'秋',作物:'地まめ',科:'マメ科'},
+  {畝:'A9',年:2026,季節:'春',作物:'じゃがいも',科:'ナス科'},
+  {畝:'A9',年:2026,季節:'夏',作物:'休耕',科:null},
+  {畝:'A10',年:2025,季節:'夏',作物:'かぼちゃ',科:'ウリ科'},
+  {畝:'A10',年:2025,季節:'秋',作物:'玉ねぎ',科:'ヒガンバナ科'},
+  {畝:'A10',年:2025,季節:'冬',作物:'玉ねぎ',科:'ヒガンバナ科'},
+  {畝:'A10',年:2026,季節:'春',作物:'玉ねぎ',科:'ヒガンバナ科'},
+  {畝:'A10',年:2026,季節:'夏',作物:'かぼちゃ',科:'ウリ科'},
+  {畝:'B1',年:2024,季節:'夏',作物:'とうがらし',科:'ナス科'},
+  {畝:'B1',年:2024,季節:'夏',作物:'京ピーマン',科:'ナス科'},
+  {畝:'B1',年:2024,季節:'冬',作物:'大根',科:'アブラナ科'},
+  {畝:'B1',年:2025,季節:'春',作物:'さやえんどう',科:'マメ科'},
+  {畝:'B1',年:2025,季節:'夏',作物:'しょうが',科:'ショウガ科'},
+  {畝:'B1',年:2025,季節:'秋',作物:'しょうが',科:'ショウガ科'},
+  {畝:'B1',年:2025,季節:'冬',作物:'春菊',科:'キク科'},
+  {畝:'B1',年:2025,季節:'冬',作物:'イチゴ',科:'バラ科'},
+  {畝:'B1',年:2026,季節:'春',作物:'にんじん',科:'セリ科'},
+  {畝:'B1',年:2026,季節:'春',作物:'イチゴ',科:'バラ科'},
+  {畝:'B1',年:2026,季節:'夏',作物:'にんじん',科:'セリ科'},
+  {畝:'B1',年:2026,季節:'夏',作物:'イチゴ',科:'バラ科'},
+  {畝:'B3',年:2024,季節:'夏',作物:'かぼちゃ',科:'ウリ科'},
+  {畝:'B3',年:2025,季節:'春',作物:'にんにく',科:'ヒガンバナ科'},
+  {畝:'B3',年:2025,季節:'夏',作物:'赤芽里芋',科:'サトイモ科'},
+  {畝:'B3',年:2025,季節:'秋',作物:'赤芽里芋',科:'サトイモ科'},
+  {畝:'B3',年:2025,季節:'秋',作物:'にんにく',科:'ヒガンバナ科'},
+  {畝:'B3',年:2025,季節:'冬',作物:'にんにく',科:'ヒガンバナ科'},
+  {畝:'B3',年:2026,季節:'春',作物:'にんにく',科:'ヒガンバナ科'},
+  {畝:'B3',年:2026,季節:'春',作物:'キャベツ(新藍)',科:'アブラナ科'},
+  {畝:'B3',年:2026,季節:'夏',作物:'枝豆',科:'マメ科'},
+  {畝:'B4',年:2024,季節:'夏',作物:'ミニトマト',科:'ナス科'},
+  {畝:'B4',年:2024,季節:'冬',作物:'小松菜',科:'アブラナ科'},
+  {畝:'B4',年:2025,季節:'春',作物:'小松菜',科:'アブラナ科'},
+  {畝:'B4',年:2025,季節:'夏',作物:'ゴーヤ',科:'ウリ科'},
+  {畝:'B4',年:2025,季節:'夏',作物:'きゅうり',科:'ウリ科'},
+  {畝:'B4',年:2025,季節:'秋',作物:'カブ',科:'アブラナ科'},
+  {畝:'B4',年:2025,季節:'秋',作物:'白菜',科:'アブラナ科'},
+  {畝:'B4',年:2025,季節:'秋',作物:'小松菜',科:'アブラナ科'},
+  {畝:'B4',年:2025,季節:'冬',作物:'カブ',科:'アブラナ科'},
+  {畝:'B4',年:2025,季節:'冬',作物:'白菜',科:'アブラナ科'},
+  {畝:'B4',年:2025,季節:'冬',作物:'小松菜',科:'アブラナ科'},
+  {畝:'B4',年:2026,季節:'春',作物:'いんげん',科:'マメ科'},
+  {畝:'B4',年:2026,季節:'夏',作物:'とうもろこし',科:'イネ科'},
+  {畝:'B5',年:2024,季節:'夏',作物:'ししとう',科:'ナス科'},
+  {畝:'B5',年:2024,季節:'夏',作物:'ピーマン',科:'ナス科'},
+  {畝:'B5',年:2024,季節:'夏',作物:'パプリカ',科:'ナス科'},
+  {畝:'B5',年:2024,季節:'冬',作物:'キャベツ',科:'アブラナ科'},
+  {畝:'B5',年:2025,季節:'春',作物:'キャベツ',科:'アブラナ科'},
+  {畝:'B5',年:2025,季節:'夏',作物:'なす',科:'ナス科'},
+  {畝:'B5',年:2025,季節:'夏',作物:'ピーマン',科:'ナス科'},
+  {畝:'B5',年:2025,季節:'夏',作物:'ミニトマト',科:'ナス科'},
+  {畝:'B5',年:2025,季節:'秋',作物:'そら豆',科:'マメ科'},
+  {畝:'B5',年:2025,季節:'冬',作物:'そら豆',科:'マメ科'},
+  {畝:'B5',年:2026,季節:'春',作物:'そら豆',科:'マメ科'},
+  {畝:'B5',年:2026,季節:'夏',作物:'オクラ',科:'アオイ科'},
+  {畝:'B6',年:2024,季節:'春',作物:'じゃがいも',科:'ナス科'},
+  {畝:'B6',年:2024,季節:'夏',作物:'パクチー',科:'セリ科'},
+  {畝:'B6',年:2024,季節:'冬',作物:'にんじん',科:'セリ科'},
+  {畝:'B6',年:2025,季節:'春',作物:'にんじん',科:'セリ科'},
+  {畝:'B6',年:2025,季節:'夏',作物:'ズッキーニ',科:'ウリ科'},
+  {畝:'B6',年:2025,季節:'夏',作物:'シシトウ',科:'ナス科'},
+  {畝:'B6',年:2025,季節:'夏',作物:'パプリカ',科:'ナス科'},
+  {畝:'B6',年:2025,季節:'秋',作物:'えんどう',科:'マメ科'},
+  {畝:'B6',年:2025,季節:'冬',作物:'えんどう',科:'マメ科'},
+  {畝:'B6',年:2026,季節:'春',作物:'えんどう',科:'マメ科'},
+  {畝:'B6',年:2026,季節:'夏',作物:'しょうが',科:'ショウガ科'},
+  {畝:'B7',年:2024,季節:'夏',作物:'オクラ',科:'アオイ科'},
+  {畝:'B7',年:2024,季節:'冬',作物:'スナップエンドウ',科:'マメ科'},
+  {畝:'B7',年:2025,季節:'春',作物:'スナップエンドウ',科:'マメ科'},
+  {畝:'B7',年:2025,季節:'夏',作物:'ミニトマト',科:'ナス科'},
+  {畝:'B7',年:2025,季節:'秋',作物:'にんじん',科:'セリ科'},
+  {畝:'B7',年:2025,季節:'冬',作物:'にんじん',科:'セリ科'},
+  {畝:'B7',年:2026,季節:'春',作物:'ゴーヤ',科:'ウリ科'},
+  {畝:'B7',年:2026,季節:'春',作物:'きゅうり',科:'ウリ科'},
+  {畝:'B7',年:2026,季節:'夏',作物:'ゴーヤ',科:'ウリ科'},
+  {畝:'B7',年:2026,季節:'夏',作物:'きゅうり',科:'ウリ科'},
+  {畝:'C1',年:2024,季節:'夏',作物:'ブロッコリー',科:'アブラナ科'},
+  {畝:'C1',年:2024,季節:'冬',作物:'ほうれん草',科:'アカザ科'},
+  {畝:'C1',年:2025,季節:'春',作物:'ほうれん草',科:'アカザ科'},
+  {畝:'C1',年:2025,季節:'夏',作物:'ネギ',科:'ヒガンバナ科'},
+  {畝:'C1',年:2025,季節:'秋',作物:'ネギ',科:'ヒガンバナ科'},
+  {畝:'C1',年:2025,季節:'冬',作物:'ネギ',科:'ヒガンバナ科'},
+  {畝:'C1',年:2026,季節:'春',作物:'ネギ',科:'ヒガンバナ科'},
+  {畝:'C1',年:2026,季節:'夏',作物:'ネギ',科:'ヒガンバナ科'},
+  {畝:'C3',年:2024,季節:'春',作物:'じゃがいも',科:'ナス科'},
+  {畝:'C3',年:2024,季節:'冬',作物:'にんじん',科:'セリ科'},
+  {畝:'C3',年:2025,季節:'春',作物:'インゲン',科:'マメ科'},
+  {畝:'C3',年:2025,季節:'夏',作物:'インゲン',科:'マメ科'},
+  {畝:'C3',年:2025,季節:'秋',作物:'キャベツ',科:'アブラナ科'},
+  {畝:'C3',年:2025,季節:'冬',作物:'キャベツ',科:'アブラナ科'},
+  {畝:'C3',年:2026,季節:'春',作物:'とうもろこし',科:'イネ科'},
+  {畝:'C3',年:2026,季節:'夏',作物:'とうもろこし',科:'イネ科'},
+  {畝:'C4',年:2024,季節:'春',作物:'じゃがいも',科:'ナス科'},
+  {畝:'C4',年:2024,季節:'冬',作物:'にんじん',科:'セリ科'},
+  {畝:'C4',年:2025,季節:'春',作物:'ひよこ豆',科:'マメ科'},
+  {畝:'C4',年:2025,季節:'夏',作物:'枝豆',科:'マメ科'},
+  {畝:'C4',年:2025,季節:'秋',作物:'グリーンピース',科:'マメ科'},
+  {畝:'C4',年:2025,季節:'冬',作物:'グリーンピース',科:'マメ科'},
+  {畝:'C4',年:2026,季節:'春',作物:'グリーンピース',科:'マメ科'},
+  {畝:'C4',年:2026,季節:'夏',作物:'とうもろこし',科:'イネ科'},
+  {畝:'C5',年:2024,季節:'冬',作物:'白菜',科:'アブラナ科'},
+  {畝:'C5',年:2025,季節:'春',作物:'とうもろこし',科:'イネ科'},
+  {畝:'C5',年:2025,季節:'夏',作物:'とうもろこし',科:'イネ科'},
+  {畝:'C5',年:2025,季節:'秋',作物:'玉ねぎ苗',科:'ヒガンバナ科'},
+  {畝:'C5',年:2026,季節:'春',作物:'新藍キャベツ',科:'アブラナ科'},
+  {畝:'C5',年:2026,季節:'夏',作物:'新藍キャベツ',科:'アブラナ科'},
+  {畝:'C6',年:2025,季節:'春',作物:'枝豆',科:'マメ科'},
+  {畝:'C6',年:2025,季節:'夏',作物:'とうもろこし',科:'イネ科'},
+  {畝:'C6',年:2025,季節:'秋',作物:'大根',科:'アブラナ科'},
+  {畝:'C6',年:2025,季節:'冬',作物:'大根',科:'アブラナ科'},
+  {畝:'C6',年:2026,季節:'春',作物:'ズッキーニ',科:'ウリ科'},
+  {畝:'C6',年:2026,季節:'夏',作物:'ズッキーニ',科:'ウリ科'},
+  {畝:'C7',年:2025,季節:'春',作物:'にんじん',科:'セリ科'},
+  {畝:'C7',年:2025,季節:'夏',作物:'にんじん',科:'セリ科'},
+  {畝:'C7',年:2025,季節:'秋',作物:'スティックセニョール',科:'アブラナ科'},
+  {畝:'C7',年:2025,季節:'冬',作物:'スティックセニョール',科:'アブラナ科'},
+  {畝:'C7',年:2026,季節:'春',作物:'ミニトマト',科:'ナス科'},
+  {畝:'C7',年:2026,季節:'夏',作物:'ミニトマト',科:'ナス科'},
+  {畝:'C8',年:2024,季節:'夏',作物:'にんじん',科:'セリ科'},
+  {畝:'C8',年:2025,季節:'春',作物:'枝豆',科:'マメ科'},
+  {畝:'C8',年:2025,季節:'夏',作物:'枝豆',科:'マメ科'},
+  {畝:'C8',年:2025,季節:'秋',作物:'スティックセニョール',科:'アブラナ科'},
+  {畝:'C8',年:2025,季節:'冬',作物:'スティックセニョール',科:'アブラナ科'},
+  {畝:'C8',年:2026,季節:'春',作物:'ミニトマト',科:'ナス科'},
+  {畝:'C8',年:2026,季節:'夏',作物:'ミニトマト',科:'ナス科'},
+  {畝:'C2',年:2025,季節:'夏',作物:'ネギ',科:'ヒガンバナ科'},
+  {畝:'C2',年:2025,季節:'秋',作物:'ネギ',科:'ヒガンバナ科'},
+  {畝:'C2',年:2025,季節:'冬',作物:'ネギ',科:'ヒガンバナ科'},
+  {畝:'C2',年:2026,季節:'春',作物:'ネギ',科:'ヒガンバナ科'},
+  {畝:'C2',年:2026,季節:'夏',作物:'ネギ',科:'ヒガンバナ科'},
+  {畝:'C9',年:2025,季節:'夏',作物:'にんじん',科:'セリ科'},
+  {畝:'C9',年:2025,季節:'秋',作物:'にんじん',科:'セリ科'},
+  {畝:'C9',年:2025,季節:'冬',作物:'にんじん',科:'セリ科'},
+  {畝:'C9',年:2026,季節:'春',作物:'にんじん',科:'セリ科'},
+  {畝:'C9',年:2026,季節:'夏',作物:'えだまめ',科:'マメ科'},
+  {畝:'C10',年:2025,季節:'夏',作物:'にんじん',科:'セリ科'},
+  {畝:'C10',年:2025,季節:'秋',作物:'にんじん',科:'セリ科'},
+  {畝:'C10',年:2025,季節:'冬',作物:'にんじん',科:'セリ科'},
+  {畝:'C10',年:2026,季節:'春',作物:'にんじん',科:'セリ科'},
+  {畝:'C10',年:2026,季節:'夏',作物:'えだまめ',科:'マメ科'},
+  {畝:'C11',年:2025,季節:'夏',作物:'アスパラ',科:'キジカクシ科'},
+  {畝:'C11',年:2025,季節:'秋',作物:'アスパラ',科:'キジカクシ科'},
+  {畝:'C11',年:2025,季節:'冬',作物:'アスパラ',科:'キジカクシ科'},
+  {畝:'C11',年:2026,季節:'春',作物:'アスパラ',科:'キジカクシ科'},
+  {畝:'C11',年:2026,季節:'夏',作物:'アスパラ',科:'キジカクシ科'},
+  {畝:'C12',年:2025,季節:'夏',作物:'アスパラ',科:'キジカクシ科'},
+  {畝:'C12',年:2025,季節:'秋',作物:'アスパラ',科:'キジカクシ科'},
+  {畝:'C12',年:2025,季節:'冬',作物:'アスパラ',科:'キジカクシ科'},
+  {畝:'C12',年:2026,季節:'春',作物:'アスパラ',科:'キジカクシ科'},
+  {畝:'C12',年:2026,季節:'夏',作物:'アスパラ',科:'キジカクシ科'},
+  {畝:'C0',年:2024,季節:'春',作物:'ニラ',科:'ヒガンバナ科'},
+  {畝:'C0',年:2024,季節:'夏',作物:'ニラ',科:'ヒガンバナ科'},
+  {畝:'C0',年:2024,季節:'秋',作物:'ニラ',科:'ヒガンバナ科'},
+  {畝:'C0',年:2024,季節:'冬',作物:'ニラ',科:'ヒガンバナ科'},
+  {畝:'C0',年:2025,季節:'春',作物:'ニラ',科:'ヒガンバナ科'},
+  {畝:'C0',年:2025,季節:'夏',作物:'ニラ',科:'ヒガンバナ科'},
+  {畝:'C0',年:2025,季節:'秋',作物:'ニラ',科:'ヒガンバナ科'},
+  {畝:'C0',年:2025,季節:'冬',作物:'ニラ',科:'ヒガンバナ科'},
+  {畝:'C0',年:2026,季節:'春',作物:'ニラ',科:'ヒガンバナ科'},
+  {畝:'C0',年:2026,季節:'夏',作物:'ニラ',科:'ヒガンバナ科'},
+];
+
+var ORD=['春','夏','秋','冬'];
+var SORD={春:0,夏:1,秋:2,冬:3};
+var PLANTING={'春(3-5月)':['じゃがいも','ブロッコリー苗','スナップエンドウ','にんじん','そら豆（植付）','キャベツ苗'],'夏(6-8月)':['きゅうり','ナス','トマト','ピーマン','オクラ','枝豆','とうもろこし','かぼちゃ'],'秋(9-10月)':['大根','白菜','ほうれん草','小松菜','にんにく','玉ねぎ苗','そら豆（播種）'],'冬(11-2月)':['玉ねぎ苗','ほうれん草','小松菜','春菊','イチゴ（定植）']};
+
+// ========================================
+// データ管理（localStorage + Google Sheets同期）
+// ========================================
+var recs=[];
+try{recs=JSON.parse(localStorage.getItem('farmRecs3')||'[]')}catch(e){}
+// 事前登録レコード（未登録の場合のみ追加）
+var SEED_RECS=[
+  {id:1776556800001,date:'2026-04-19',ridge:'A4',type:'土作り',crop:'耕運機すき込み',note:'イタリアンライグラス刈り・耕運機ですき込み',pots:'',transplants:'',potNote:''},
+  {id:1776556800002,date:'2026-04-19',ridge:'A5',type:'土作り',crop:'耕運機すき込み',note:'イタリアンライグラス刈り・耕運機ですき込み',pots:'',transplants:'',potNote:''},
+  {id:1777648800001,date:'2026-05-07',ridge:'A5',type:'種購入',crop:'快豆黒頭巾（枝豆）',note:'325円・JA刈谷北部農協・A5・B3植付予定',pots:'',transplants:'',potNote:''},
+  {id:1777648800002,date:'2026-05-07',ridge:'B3',type:'種購入',crop:'湯上り娘（枝豆）',note:'330円・JA刈谷北部農協・A5・B3植付予定',pots:'',transplants:'',potNote:''},
+  {id:1777648800003,date:'2026-05-07',ridge:'C3',type:'種購入',crop:'ゴールドラッシュ（とうもろこし）',note:'495円・JA刈谷北部農協・C3・C4・A5・B4植付予定',pots:'',transplants:'',potNote:''},
+  // 2026-05-20 作業記録
+  {id:1779192000001,date:'2026-05-20',ridge:'B6',type:'撤収・片付け',crop:'えんどう',note:'さやえんどう撤収・片付け',pots:'',transplants:'',potNote:''},
+  {id:1779192000002,date:'2026-05-20',ridge:'B6',type:'土作り',crop:'土作り一式',note:'バーク堆肥てみ2杯・籾殻てみ1杯・化成肥料女性一つかみ×6・有機石灰1〜2つかみ／しょうが植え付け前',pots:'',transplants:'',potNote:''},
+  {id:1779192000003,date:'2026-05-20',ridge:'B6',type:'苗植え付け',crop:'しょうが',note:'さやえんどう後作・土づくり後に植え付け',pots:'',transplants:'',potNote:''},
+  {id:1779192000004,date:'2026-05-20',ridge:'B3',type:'撤収・片付け',crop:'にんにく',note:'にんにく撤収・片付け',pots:'',transplants:'',potNote:''},
+  {id:1779192000005,date:'2026-05-20',ridge:'B3',type:'土作り',crop:'土作り一式',note:'バーク堆肥てみ1〜1.5杯・化成肥料女性一つかみ×2〜3・有機石灰なし〜1つかみ／枝豆植え付け前',pots:'',transplants:'',potNote:''},
+  {id:1779192000006,date:'2026-05-20',ridge:'C4',type:'撤収・片付け',crop:'グリーンピース',note:'グリーンピース撤収・片付け',pots:'',transplants:'',potNote:''},
+  {id:1779192000007,date:'2026-05-20',ridge:'C4',type:'土作り',crop:'土作り一式',note:'バーク堆肥てみ1〜1.5杯・化成肥料女性一つかみ×4〜5・有機石灰なし〜半つかみ／とうもろこし前',pots:'',transplants:'',potNote:''},
+  {id:1779192000008,date:'2026-05-20',ridge:'A1',type:'土作り',crop:'土作り一式',note:'バーク堆肥てみ1〜2杯・化成肥料女性一つかみ×5〜7・有機石灰なし〜1つかみ／とうもろこし前（大根後・畝要確認）',pots:'',transplants:'',potNote:''},
+  {id:1779192000009,date:'2026-05-20',ridge:'B2',type:'苗植え付け',crop:'こどもピーマン・ししとう・とうがらし',note:'こどもピーマン2苗・ししとう2苗・とうがらし4苗 計8苗',pots:'',transplants:'',potNote:''},
+];
+SEED_RECS.forEach(function(s){
+  if(!recs.find(function(r){return r.id===s.id})){recs.push(s);}
+});
+recs.sort(function(a,b){return b.id-a.id});
+saveRecs();
+var pendingOps=[];
+try{pendingOps=JSON.parse(localStorage.getItem('farmPending')||'[]')}catch(e){}
+var recFilter='all',ridgeFilter='all';
+var withdrawals=[];
+try{withdrawals=JSON.parse(localStorage.getItem('farmWithdrawals')||'[]')}catch(e){}
+
+function saveRecs(){try{localStorage.setItem('farmRecs3',JSON.stringify(recs))}catch(e){}}
+function savePending(){try{localStorage.setItem('farmPending',JSON.stringify(pendingOps))}catch(e){}}
+function saveWithdrawals(){try{localStorage.setItem('farmWithdrawals',JSON.stringify(withdrawals))}catch(e){}}
+function getEffectiveRAW(){
+  if(!withdrawals.length)return RAW;
+  return RAW.filter(function(d){
+    var w=withdrawals.find(function(w){return w.畝===d.畝&&w.作物===d.作物});
+    if(!w)return true;
+    return getSeasonIdx(d.年,d.季節)<=getSeasonIdx(w.endYear,w.endSeason);
+  });
+}
+
+function setSyncStatus(state,msg){
+  var el=document.getElementById('sync-status');
+  el.className='sync-st '+state;
+  el.textContent=msg;
+  el.style.cursor=state==='err'?'pointer':'default';
+}
+function clearPendingIfErr(){
+  var el=document.getElementById('sync-status');
+  if(!el.className.includes('err'))return;
+  pendingOps=[];savePending();
+  setSyncStatus('off','未接続（リセット済）');
+}
+
+function jsonpRequest(url,cb){
+  var cbName='gasCb'+Date.now()+'_'+Math.floor(Math.random()*100000);
+  var script=document.createElement('script');
+  var done=false;
+  function finish(data){
+    if(done)return;done=true;
+    clearTimeout(timer);delete window[cbName];
+    if(script.parentNode)script.parentNode.removeChild(script);
+    cb(data);
+  }
+  var timer=setTimeout(function(){
+    finish({ok:false,error:'timeout'});
+  },15000);
+  window[cbName]=function(data){finish(data)};
+  script.onerror=function(){finish({ok:false,error:'network'})};
+  script.src=url+(url.indexOf('?')>=0?'&':'?')+'callback='+encodeURIComponent(cbName);
+  document.head.appendChild(script);
+}
+
+function syncErrorMessage(data){
+  if(data&&data.error==='timeout')return 'GAS設定確認';
+  if(data&&data.error==='network')return '通信エラー';
+  if(data&&data.error)return '同期エラー: '+data.error;
+  return '同期エラー';
+}
+
+function processPending(){
+  if(!CONFIG.GAS_URL||pendingOps.length===0)return;
+  setSyncStatus('wait','同期中…');
+  var op=pendingOps[0];
+  var url=CONFIG.GAS_URL+'?action='+encodeURIComponent(op.action);
+  if(op.action==='add'){
+    var r=op.record;
+    url+='&id='+encodeURIComponent(r.id)+'&date='+encodeURIComponent(r.date)+'&ridge='+encodeURIComponent(r.ridge)+'&type='+encodeURIComponent(r.type)+'&crop='+encodeURIComponent(r.crop)+'&note='+encodeURIComponent(r.note||'')+'&pots='+encodeURIComponent(r.pots||'')+'&transplants='+encodeURIComponent(r.transplants||'')+'&potNote='+encodeURIComponent(r.potNote||'');
+  }else if(op.action==='del'){
+    url+='&id='+encodeURIComponent(op.id);
+  }
+  jsonpRequest(url,function(data){
+    var deleteAlreadyGone=op.action==='del'&&data&&data.error==='not found';
+    if((data&&data.ok)||deleteAlreadyGone){
+      pendingOps.shift();savePending();
+      if(pendingOps.length>0){processPending()}else{setSyncStatus('ok','✓ 同期済')}
+    }else{setSyncStatus('err',syncErrorMessage(data))}
+  });
+}
+function loadFromGAS(){
+  if(!CONFIG.GAS_URL){setSyncStatus('off','未接続');return}
+  setSyncStatus('wait','読込中…');
+  // file://からの通信はfetchがブロックされるためJSONPを使用
+  var cbName='gasCb'+Date.now();
+  var script=document.createElement('script');
+  var timer=setTimeout(function(){
+    delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);
+    setSyncStatus('err','オフライン');processPending();
+  },10000);
+  window[cbName]=function(data){
+    clearTimeout(timer);
+    delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);
+    if(!Array.isArray(data)){setSyncStatus('err','データエラー');return}
+    var gasIds=data.map(function(r){return String(r.id)});
+    var localOnly=recs.filter(function(r){return gasIds.indexOf(String(r.id))<0});
+    recs=data.map(function(r){
+      return{id:r.id,date:r.date,ridge:r.ridge,type:r.type,crop:r.crop,
+        note:r.note||'',pots:r.pots||'',transplants:r.transplants||'',potNote:r.potNote||''};
+    }).concat(localOnly);
+    recs.sort(function(a,b){return b.id-a.id});
+    saveRecs();setSyncStatus('ok','✓ 同期済');
+    processPending();renderRecs();
+  };
+  script.src=CONFIG.GAS_URL+'?callback='+cbName;
+  document.head.appendChild(script);
+}
+
+// ========================================
+// 連作チェック（3段階判定）
+// ========================================
+function getSeasonIdx(year,season){return year*4+SORD[season]}
+
+function getCurrentSeasonIdx(){
+  var m=new Date().getMonth()+1;
+  var s=m>=3&&m<=5?'春':m>=6&&m<=8?'夏':m>=9&&m<=10?'秋':'冬';
+  return getSeasonIdx(new Date().getFullYear(),s);
+}
+
+// 科ごとの警告レベルを返す（'red'/'yellow'/'green'）
+function getWarnLevel(sci,gap){
+  if(sci==='ナス科'||sci==='セリ科'){
+    if(gap<=4)return'red';
+    if(gap<8)return'yellow';
+    return'green';
+  }
+  if(sci==='アブラナ科'||sci==='ウリ科'){
+    if(gap<=4)return'red';
+    return'green';
+  }
+  if(sci==='マメ科'||sci==='イネ科'){
+    if(gap===4)return'red';
+    return'green';
+  }
+  return'green';
+}
+
+function fmtBlock(b){
+  return b.start.年===b.end.年&&b.start.季節===b.end.季節
+    ?b.start.年+b.start.季節
+    :b.start.年+b.start.季節+'〜'+b.end.年+b.end.季節;
+}
+
+// {level:'red'|'yellow'|'green', msg:string} の配列を返す
+function checkRot(ridge){
+  var rows=getFor(ridge).filter(function(d){return d.科});
+  var cm={};
+  rows.forEach(function(d){
+    var k=d.作物+'__'+d.科;
+    if(!cm[k])cm[k]={作物:d.作物,科:d.科,ss:[]};
+    if(!cm[k].ss.find(function(s){return s.年===d.年&&s.季節===d.季節}))
+      cm[k].ss.push({年:d.年,季節:d.季節});
+  });
+  var allB=[];
+  Object.keys(cm).forEach(function(key){
+    var obj=cm[key];
+    var sorted=obj.ss.slice().sort(function(a,b){return a.年!==b.年?a.年-b.年:SORD[a.季節]-SORD[b.季節]});
+    var blk={作物:obj.作物,科:obj.科,start:sorted[0],end:sorted[0]};
+    for(var i=1;i<sorted.length;i++){
+      var p=sorted[i-1],n=sorted[i];
+      if(isNext(p.年,p.季節,n.年,n.季節)){blk.end=n}
+      else{allB.push(blk);blk={作物:obj.作物,科:obj.科,start:n,end:n}}
+    }
+    allB.push(blk);
+  });
+  var sb={};
+  allB.forEach(function(b){if(!sb[b.科])sb[b.科]=[];sb[b.科].push(b)});
+  var warns=[];
+  Object.keys(sb).forEach(function(sci){
+    var blocks=sb[sci].slice().sort(function(a,b){
+      return getSeasonIdx(a.start.年,a.start.季節)-getSeasonIdx(b.start.年,b.start.季節);
+    });
+    for(var i=1;i<blocks.length;i++){
+      var pv=blocks[i-1],cu=blocks[i];
+      if(pv.end.年+'-'+pv.end.季節===cu.start.年+'-'+cu.start.季節)continue;
+      var gap=getSeasonIdx(cu.start.年,cu.start.季節)-getSeasonIdx(pv.end.年,pv.end.季節);
+      if(gap<0)continue;
+      var level=getWarnLevel(sci,gap);
+      if(level==='green')continue;
+      if(getSeasonIdx(cu.end.年,cu.end.季節)<getCurrentSeasonIdx())continue;
+      var label=pv.作物===cu.作物?pv.作物+'('+sci+')':pv.作物+'→'+cu.作物+'('+sci+')';
+      warns.push({level:level,msg:fmtBlock(pv)+' → '+fmtBlock(cu)+'：'+label+'の連作'});
+    }
+  });
+  // redを先に並べる
+  warns.sort(function(a,b){return(a.level==='red'?0:1)-(b.level==='red'?0:1)});
+  return warns;
+}
+
+function getMaxLevel(warns){
+  if(warns.some(function(w){return w.level==='red'}))return'red';
+  if(warns.some(function(w){return w.level==='yellow'}))return'yellow';
+  return'green';
+}
+
+// ========================================
+// 共通ヘルパー
+// ========================================
+var ALL_RIDGES=['A7','A8','A9','A10','A1','A2','A3','A4','A5','A6',
+  'B1','B2','B3','B4','B5','B6','B7',
+  'C1','C2','C0','C3','C4','C5','C6','C7','C8','C9','C10','C11','C12'];
+function getRidges(){
+  var fromRaw=new Set(RAW.map(function(d){return d.畝}));
+  var all=ALL_RIDGES.slice();
+  fromRaw.forEach(function(r){if(all.indexOf(r)<0)all.push(r);});
+  return all;
+}
+function getFor(r){return getEffectiveRAW().filter(function(d){return d.畝===r}).sort(function(a,b){return a.年!==b.年?a.年-b.年:SORD[a.季節]-SORD[b.季節]})}
+function isNext(y1,s1,y2,s2){var i1=ORD.indexOf(s1),i2=ORD.indexOf(s2);return(y1===y2&&i2===i1+1)||(y2===y1+1&&s1==='冬'&&s2==='春')}
+function cropCls(c,sci){if(c==='休耕')return'ck';var m={'ナス科':'cn','アブラナ科':'ca','マメ科':'cm','ウリ科':'cu','イネ科':'ci','ヒガンバナ科':'ch','アオイ科':'co','セリ科':'cs','バラ科':'cb'};return m[sci]||'cx'}
+
+// ========================================
+// タブ・フィルター
+// ========================================
+function showTab(id,btn){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on')});
+  document.getElementById('p-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='tl')renderTL();
+  if(id==='alert')renderAlerts();
+  if(id==='rec')renderRecs();
+  if(id==='plan')renderPlan();
+  if(id==='memo')renderMemo();
+}
+
+function filterR(type,btn){
+  ridgeFilter=type;
+  document.querySelectorAll('#f-check .fb').forEach(function(b){b.classList.remove('on')});
+  btn.classList.add('on');renderGrid();
+}
+
+// ========================================
+// 連作チェック表示
+// ========================================
+function renderGrid(){
+  var grid=document.getElementById('ridge-grid');grid.innerHTML='';
+  getRidges().forEach(function(r){
+    var warns=checkRot(r);
+    var maxLevel=getMaxLevel(warns);
+    if(ridgeFilter==='warn'&&maxLevel!=='red')return;
+    if(ridgeFilter==='yellow'&&maxLevel!=='yellow')return;
+    if(ridgeFilter==='ok'&&maxLevel!=='green')return;
+    var data=getFor(r);
+    var crops=[...new Set(data.slice(-4).map(function(d){return d.作物}))].join('、');
+    var el=document.createElement('div');
+    var cls=maxLevel==='red'?'warn':maxLevel==='yellow'?'yellow':'good';
+    var badge=maxLevel==='red'?'<span class="badge bw">🔴 要注意</span>':maxLevel==='yellow'?'<span class="badge by">🟡 注意</span>':'<span class="badge bg">✅ 良好</span>';
+    var firstWarn=warns.length?warns[0]:'';
+    var warnDiv=maxLevel==='red'?'<div class="rc-w">'+firstWarn.msg+'</div>':maxLevel==='yellow'?'<div class="rc-y">'+firstWarn.msg+'</div>':'<div class="rc-g">問題なし</div>';
+    el.className='rc '+cls;
+    el.innerHTML='<div class="rc-name">畝 '+r+'</div><div class="rc-crop">最近：'+(crops||'記録なし')+'</div><div>'+badge+'<span class="badge bn">'+data.length+'件</span></div>'+warnDiv;
+    el.onclick=function(){showDetail(r)};
+    grid.appendChild(el);
+  });
+}
+
+function showDetail(r){
+  var data=getFor(r),warns=checkRot(r);
+  document.getElementById('mo-title').textContent='畝 '+r;
+  var h='';
+  if(warns.length){
+    var reds=warns.filter(function(w){return w.level==='red'});
+    var yellows=warns.filter(function(w){return w.level==='yellow'});
+    if(reds.length)h+='<div style="background:#fadbd8;border:1px solid #f1948a;border-radius:8px;padding:10px;margin-bottom:8px"><div style="font-weight:700;color:#e55039;font-size:13px;margin-bottom:4px">🔴 要注意（連作）</div>'+reds.map(function(w){return'<div style="font-size:12px;color:#c0392b">・'+w.msg+'</div>'}).join('')+'</div>';
+    if(yellows.length)h+='<div style="background:#fef9e7;border:1px solid #f9ca24;border-radius:8px;padding:10px;margin-bottom:8px"><div style="font-weight:700;color:#e67e22;font-size:13px;margin-bottom:4px">🟡 注意（連作）</div>'+yellows.map(function(w){return'<div style="font-size:12px;color:#e67e22">・'+w.msg+'</div>'}).join('')+'</div>';
+  }
+  h+='<div style="font-weight:700;font-size:13px;margin-bottom:8px;color:#3d2b1f">作付け履歴</div>';
+  data.forEach(function(d){h+='<div class="hr"><div class="dot d'+d.季節+'"></div><div style="font-size:11px;color:#8c7060;white-space:nowrap">'+d.年+' '+d.季節+'</div><div style="flex:1;font-size:13px;padding-left:4px">'+d.作物+'</div>'+(d.科?'<span class="badge bi" style="font-size:10px">'+d.科+'</span>':'')+'</div>'});
+  document.getElementById('mo-body').innerHTML=h;
+  document.getElementById('modal').classList.add('on');
+}
+
+function closeMo(e){if(!e||e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('on')}
+
+// ========================================
+// スケジュール表
+// ========================================
+function renderTL(){
+  var years=[2024,2025,2026];
+  var seasons=['春','夏','秋','冬'];
+  var eRaw=getEffectiveRAW();
+  // ヘッダー1行（24春 24夏…）
+  var hd='<thead><tr><th class="tl-fix">畝</th>';
+  years.forEach(function(yr){
+    var yy=String(yr).slice(2);
+    seasons.forEach(function(s,si){
+      hd+='<th'+(si===0?' style="border-left:2px solid #c8bfb5"':'')+'>'+yy+s+'</th>';
+    });
+  });
+  hd+='</tr></thead>';
+  // データ行
+  var rows='';
+  getRidges().forEach(function(r){
+    var hasAny=years.some(function(yr){return eRaw.some(function(d){return d.畝===r&&d.年===yr});});
+    if(!hasAny)return;
+    rows+='<tr><td class="rl tl-fix">'+r+'</td>';
+    years.forEach(function(yr){
+      seasons.forEach(function(s,si){
+        var crops=eRaw.filter(function(d){return d.畝===r&&d.年===yr&&d.季節===s});
+        var sty=si===0?' style="border-left:2px solid #c8bfb5"':'';
+        rows+=crops.length
+          ?'<td'+sty+'>'+crops.map(function(c){return'<span class="cc '+cropCls(c.作物,c.科)+'">'+c.作物+'</span>'}).join('')+'</td>'
+          :'<td'+sty+'></td>';
+      });
+    });
+    rows+='</tr>';
+  });
+  var ft=hd.replace('<thead>','<tfoot>').replace('</thead>','</tfoot>');
+  document.getElementById('tl-cards').innerHTML=
+    '<div class="card"><div class="card-t">スケジュール（3年分）</div>'
+    +'<div class="tl-scroll"><table>'+hd+'<tbody>'+rows+'</tbody>'+ft+'</table></div></div>';
+}
+
+// ========================================
+// 作業記録フォーム
+// ========================================
+function populateSel(){
+  var sel=document.getElementById('r-ridge');
+  // ポット/育苗中を最初に追加
+  var opt=document.createElement('option');
+  opt.value='ポット/育苗中';opt.textContent='🪴 ポット/育苗中';
+  sel.appendChild(opt);
+  getRidges().forEach(function(r){
+    var o=document.createElement('option');o.value=r;o.textContent='畝 '+r;sel.appendChild(o);
+  });
+}
+
+function populateCropList(){
+  var crops=[...new Set(getEffectiveRAW().map(function(d){return d.作物}).filter(function(c){return c!=='休耕'}))].sort();
+  var extras=['緑肥すき込み','耕運機すき込み','石灰散布','堆肥投入','マルチ張り','マルチ剥がし','支柱立て','ネット張り','草取り','花','なし'];
+  var dl=document.getElementById('crop-list');
+  crops.concat(extras).forEach(function(c){
+    var opt=document.createElement('option');opt.value=c;dl.appendChild(opt);
+  });
+}
+
+var NO_CROP_TYPES=['土作り','メンテナンス','その他','撤収・片付け'];
+var TYPE_PLACEHOLDER={
+  '播種':'例：ピーマン',
+  '苗植え付け':'例：ミニトマト苗',
+  '苗購入':'例：ミニトマト苗 3株（〇〇ホームセンター）',
+  '種購入':'例：とうもろこし 1袋（〇〇ホームセンター）',
+  '土作り':'例：堆肥投入・石灰散布など（省略可）',
+  '追肥':'例：化成肥料・液肥など',
+  '農薬':'例：〇〇農薬 500倍希釈',
+  '殺菌剤':'例：〇〇殺菌剤 1000倍希釈',
+  'メンテナンス':'例：マルチ張り・支柱立てなど（省略可）',
+  'その他':'内容（省略可）',
+  '育苗':'例：ピーマン',
+  '撤収・片付け':'例：キャベツ（省略可）',
+};
+
+function onTypeChange(){
+  var type=document.getElementById('r-type').value;
+  var inp=document.getElementById('r-crop');
+  inp.placeholder=TYPE_PLACEHOLDER[type]||'例：ピーマン';
+  var isPot=document.getElementById('r-ridge').value==='ポット/育苗中';
+  if(isPot){document.getElementById('r-type').value='育苗'}
+  var tf=document.getElementById('tettai-fields');
+  if(type==='撤収・片付け'&&!isPot){tf.classList.add('show')}else{tf.classList.remove('show')}
+}
+
+function onRidgeChange(){
+  var isPot=document.getElementById('r-ridge').value==='ポット/育苗中';
+  var pf=document.getElementById('pot-fields');
+  if(isPot){pf.classList.add('show');document.getElementById('r-type').value='育苗'}
+  else{pf.classList.remove('show')}
+}
+
+var editingId=null;
+
+function editRec(id){
+  var rec=recs.find(function(r){return r.id===id});
+  if(!rec)return;
+  editingId=id;
+  document.getElementById('r-date').value=rec.date;
+  document.getElementById('r-ridge').value=rec.ridge;
+  onRidgeChange();
+  document.getElementById('r-type').value=rec.type;
+  onTypeChange();
+  document.getElementById('r-crop').value=rec.crop==='-'?'':rec.crop;
+  document.getElementById('r-note').value=rec.note||'';
+  if(rec.ridge==='ポット/育苗中'){
+    document.getElementById('r-pots').value=rec.pots||'';
+    document.getElementById('r-transplants').value=rec.transplants||'';
+    document.getElementById('r-pot-note').value=rec.potNote||'';
+  }
+  document.getElementById('btn-submit').textContent='更新する';
+  document.getElementById('btn-cancel').style.display='block';
+  document.getElementById('p-rec').querySelector('.card').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelEdit(){
+  editingId=null;
+  document.getElementById('r-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('r-crop').value='';
+  document.getElementById('r-note').value='';
+  document.getElementById('r-pots').value='';
+  document.getElementById('r-transplants').value='';
+  document.getElementById('r-pot-note').value='';
+  document.getElementById('pot-fields').classList.remove('show');
+  document.getElementById('tettai-fields').classList.remove('show');
+  document.getElementById('btn-submit').textContent='記録する';
+  document.getElementById('btn-cancel').style.display='none';
+}
+
+function addRec(){
+  var date=document.getElementById('r-date').value;
+  var ridge=document.getElementById('r-ridge').value;
+  var type=document.getElementById('r-type').value;
+  var crop=document.getElementById('r-crop').value.trim();
+  var note=document.getElementById('r-note').value.trim();
+  var cropOptional=NO_CROP_TYPES.indexOf(type)>=0;
+  if(!date||(!crop&&!cropOptional)){alert('日付と作物/資材名を入力してください');return}
+  if(!crop)crop='-';
+  var rec={id:Date.now(),date:date,ridge:ridge,type:type,crop:crop,note:note,
+    pots:'',transplants:'',potNote:''};
+  if(ridge==='ポット/育苗中'){
+    rec.pots=document.getElementById('r-pots').value;
+    rec.transplants=document.getElementById('r-transplants').value;
+    rec.potNote=document.getElementById('r-pot-note').value.trim();
+  }
+  if(editingId!==null){
+    var oldId=editingId;
+    recs=recs.filter(function(r){return r.id!==oldId});
+    recs.unshift(rec);saveRecs();
+    if(CONFIG.GAS_URL){
+      pendingOps.push({action:'del',id:oldId});
+      pendingOps.push({action:'add',record:rec});
+      savePending();processPending();
+    }
+    editingId=null;
+    document.getElementById('btn-submit').textContent='記録する';
+    document.getElementById('btn-cancel').style.display='none';
+  }else{
+    recs.unshift(rec);saveRecs();
+    if(CONFIG.GAS_URL){
+      pendingOps.push({action:'add',record:rec});savePending();processPending();
+    }
+  }
+  if(type==='撤収・片付け'){
+    var endSeason=document.getElementById('r-end-season').value;
+    if(crop!=='-'){
+      // 作物指定あり：その作物のみ撤収
+      var matching=RAW.filter(function(d){return d.畝===ridge&&d.作物===crop});
+      if(!matching.length){
+        alert('予定表に「畝 '+ridge+'・'+crop+'」のエントリが見つかりません。\n作業記録のみ保存します。');
+      }else{
+        var endSeasonEntries=matching.filter(function(d){return d.季節===endSeason});
+        if(!endSeasonEntries.length){
+          alert('「畝 '+ridge+'」の「'+crop+'」に「'+endSeason+'」のエントリが見つかりません。\n作業記録のみ保存します。');
+        }else{
+          var endYear=Math.max.apply(null,endSeasonEntries.map(function(d){return d.年}));
+          var endIdx=getSeasonIdx(endYear,endSeason);
+          var toRemove=matching.filter(function(d){return getSeasonIdx(d.年,d.季節)>endIdx});
+          if(toRemove.length){
+            var msg='畝 '+ridge+'の'+crop+'の終了季節を'+endSeason+'（'+endYear+'年）に設定します。\n\n以下のエントリを予定表から除外します：\n'+toRemove.map(function(d){return'・'+d.年+'年'+d.季節}).join('\n')+'\n\nよろしいですか？';
+            if(confirm(msg)){
+              withdrawals=withdrawals.filter(function(w){return!(w.畝===ridge&&w.作物===crop)});
+              withdrawals.push({畝:ridge,作物:crop,endYear:endYear,endSeason:endSeason});
+              saveWithdrawals();renderGrid();renderTL();
+            }
+          }
+        }
+      }
+    }else{
+      // 作物未指定：この畝の全作物を撤収
+      var activeCrops=[...new Set(getEffectiveRAW().filter(function(d){return d.畝===ridge&&d.作物!=='休耕'}).map(function(d){return d.作物}))];
+      if(!activeCrops.length){
+        alert('畝 '+ridge+'には予定表エントリが見つかりません。\n作業記録のみ保存します。');
+      }else{
+        var updates=[];
+        var allToRemove=[];
+        activeCrops.forEach(function(c){
+          var m=RAW.filter(function(d){return d.畝===ridge&&d.作物===c});
+          var se=m.filter(function(d){return d.季節===endSeason});
+          var ey,es;
+          if(se.length){ey=Math.max.apply(null,se.map(function(d){return d.年}));es=endSeason;}
+          else{var last=m[m.length-1];ey=last.年;es=last.季節;}
+          var ei=getSeasonIdx(ey,es);
+          var rem=m.filter(function(d){return getSeasonIdx(d.年,d.季節)>ei});
+          allToRemove=allToRemove.concat(rem);
+          updates.push({畝:ridge,作物:c,endYear:ey,endSeason:es});
+        });
+        var cropList=updates.map(function(u){return'・'+u.作物+'（〜'+u.endYear+'年'+u.endSeason+'）'}).join('\n');
+        var removeList=allToRemove.length?'\n\n予定表から除外するエントリ：\n'+allToRemove.map(function(d){return'・'+d.作物+' '+d.年+'年'+d.季節}).join('\n'):'';
+        var msg='畝 '+ridge+'の全作物を撤収します。\n\n対象作物：\n'+cropList+removeList+'\n\nよろしいですか？';
+        if(confirm(msg)){
+          updates.forEach(function(u){
+            withdrawals=withdrawals.filter(function(w){return!(w.畝===u.畝&&w.作物===u.作物)});
+            withdrawals.push(u);
+          });
+          saveWithdrawals();renderGrid();renderTL();
+        }
+      }
+    }
+    document.getElementById('tettai-fields').classList.remove('show');
+  }
+  document.getElementById('r-crop').value='';
+  document.getElementById('r-note').value='';
+  document.getElementById('r-pots').value='';
+  document.getElementById('r-transplants').value='';
+  document.getElementById('r-pot-note').value='';
+  renderRecs();
+}
+
+function delRec(id){
+  recs=recs.filter(function(r){return r.id!==id});saveRecs();
+  if(CONFIG.GAS_URL){
+    pendingOps.push({action:'del',id:id});savePending();processPending();
+  }
+  renderRecs();
+}
+
+function filterRec(type,btn){
+  recFilter=type;
+  document.querySelectorAll('#f-rec .fb').forEach(function(b){b.classList.remove('on')});
+  btn.classList.add('on');renderRecs();
+}
+
+function renderRecs(){
+  var list=document.getElementById('rec-list');
+  var filtered=recFilter==='all'?recs:recs.filter(function(r){return r.type===recFilter});
+  if(!filtered.length){list.innerHTML='<div class="empty">記録がありません</div>';return}
+  list.innerHTML=filtered.map(function(r){
+    var potInfo='';
+    if(r.ridge==='ポット/育苗中'&&(r.pots||r.transplants)){
+      potInfo='<div class="rn" style="font-size:11px;color:#16a085">🪴 '+
+        (r.pots?'ポット数：'+r.pots+'  ':'')+
+        (r.transplants?'定植予定：'+r.transplants+'本':'')+'</div>';
+    }
+    if(r.potNote){potInfo+='<div class="rn">'+r.potNote+'</div>'}
+    return'<div class="ri t'+r.type+'"><div style="flex:1">'+
+      '<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">'+
+      '<strong style="font-size:13px">'+r.crop+'</strong>'+
+      '<span class="badge bn">'+r.type+'</span>'+
+      '<span class="badge bi">'+(r.ridge==='ポット/育苗中'?'🪴 育苗中':'畝'+r.ridge)+'</span></div>'+
+      '<div class="rm">'+r.date+'</div>'+
+      (r.note?'<div class="rn">'+r.note+'</div>':'')+
+      potInfo+
+      '</div><div style="display:flex;gap:4px;flex:none"><button class="btn-d" style="background:#d6eaf8;border-color:#aed6f1;color:#1a5276" onclick="editRec('+r.id+')">編集</button><button class="btn-d" onclick="delRec('+r.id+')">削除</button></div></div>';
+  }).join('');
+}
+
+// ========================================
+// 反省・来年メモ タグ抽出ビュー
+// ========================================
+function insertTag(tag){
+  var ta=document.getElementById('r-note');
+  var s=ta.selectionStart,e=ta.selectionEnd;
+  ta.value=ta.value.slice(0,s)+tag+ta.value.slice(e);
+  ta.selectionStart=ta.selectionEnd=s+tag.length;
+  ta.focus();
+}
+
+var memoFilter='all';
+function filterMemo(tag,btn){
+  memoFilter=tag;
+  document.querySelectorAll('#f-memo .fb').forEach(function(b){b.classList.remove('on')});
+  btn.classList.add('on');
+  renderMemo();
+}
+function renderMemo(){
+  var TAGS=['反省','来年','成功'];
+  var list=document.getElementById('memo-list');
+  if(!list)return;
+  var tagged=recs.filter(function(r){
+    if(!r.note)return false;
+    return TAGS.some(function(t){return r.note.indexOf('【'+t+'】')>=0});
+  });
+  if(memoFilter!=='all'){
+    tagged=tagged.filter(function(r){return r.note.indexOf('【'+memoFilter+'】')>=0});
+  }
+  var fromEl=document.getElementById('memo-from');
+  var toEl=document.getElementById('memo-to');
+  if(fromEl&&fromEl.value){
+    var fromD=fromEl.value;
+    tagged=tagged.filter(function(r){return(r.date||'').slice(0,10)>=fromD});
+  }
+  if(toEl&&toEl.value){
+    var toD=toEl.value;
+    tagged=tagged.filter(function(r){return(r.date||'').slice(0,10)<=toD});
+  }
+  if(!tagged.length){list.innerHTML='<div class="empty">タグ付きメモがありません<br><span style="font-size:11px;color:#aaa">作業記録のメモ欄に【反省】【来年】【成功】を書き込むと表示されます</span></div>';return}
+  list.innerHTML=tagged.map(function(r){
+    var note=r.note
+      .replace(/【反省】/g,'<mark class="tag-反省">【反省】</mark>')
+      .replace(/【来年】/g,'<mark class="tag-来年">【来年】</mark>')
+      .replace(/【成功】/g,'<mark class="tag-成功">【成功】</mark>');
+    return'<div class="ri t'+r.type+'"><div style="flex:1">'+
+      '<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">'+
+      '<strong style="font-size:13px">'+r.crop+'</strong>'+
+      '<span class="badge bn">'+r.type+'</span>'+
+      '<span class="badge bi">'+(r.ridge==='ポット/育苗中'?'🪴 育苗中':'畝'+r.ridge)+'</span></div>'+
+      '<div class="rm">'+r.date+'</div>'+
+      '<div class="rn" style="margin-top:4px;line-height:1.6">'+note+'</div>'+
+      '</div></div>';
+  }).join('');
+}
+
+// ========================================
+// アラート（3段階）
+// ========================================
+function renderAlerts(){
+  var allWarns=[];
+  getRidges().forEach(function(r){
+    checkRot(r).forEach(function(w){allWarns.push({r:r,w:w})});
+  });
+  var reds=allWarns.filter(function(x){return x.w.level==='red'});
+  var yellows=allWarns.filter(function(x){return x.w.level==='yellow'});
+  var now=Date.now();
+  var pestRec=recs.filter(function(r){
+    var d=(now-new Date(r.date).getTime())/864e5;
+    return(r.type==='農薬'||r.type==='殺菌剤')&&d<=14;
+  });
+  var h='';
+  reds.slice(0,6).forEach(function(x){
+    h+='<div class="al hi"><div style="font-size:18px">🔴</div><div><div class="al-t">畝 '+x.r+'：要注意</div><div class="al-d">'+x.w.msg+'</div></div></div>';
+  });
+  yellows.slice(0,4).forEach(function(x){
+    h+='<div class="al mi"><div style="font-size:18px">🟡</div><div><div class="al-t">畝 '+x.r+'：注意</div><div class="al-d">'+x.w.msg+'</div></div></div>';
+  });
+  pestRec.forEach(function(r){
+    var d=Math.floor((now-new Date(r.date).getTime())/864e5);
+    h+='<div class="al mi"><div style="font-size:18px">💊</div><div><div class="al-t">散布後 '+d+' 日：'+r.crop+'（'+(r.ridge==='ポット/育苗中'?'育苗中':'畝'+r.ridge)+'）</div><div class="al-d">'+r.type+'散布。収穫前日数を確認してください。</div></div></div>';
+  });
+  if(!h)h='<div class="empty">✅ 現在アラートはありません</div>';
+  document.getElementById('al-list').innerHTML=h;
+  var m=new Date().getMonth()+1;
+  var season=m>=3&&m<=5?'春(3-5月)':m>=6&&m<=8?'夏(6-8月)':m>=9&&m<=10?'秋(9-10月)':'冬(11-2月)';
+  var crops=PLANTING[season]||[];
+  document.getElementById('pl-guide').innerHTML='<div style="font-size:13px;color:#5c4033;margin-bottom:8px">現在は <strong>'+season+'</strong></div><div class="chip-row">'+crops.map(function(c){return'<span class="chip">🌿 '+c+'</span>'}).join('')+'</div>';
+}
+
+// ========================================
+// 作業計画
+// ========================================
+var PLANT_GUIDE={
+  'ミニトマト':{from:'4月中旬',to:'5月下旬',note:'育苗6〜8週で定植適期'},
+  'トマト':{from:'4月中旬',to:'5月下旬',note:'育苗6〜8週で定植適期'},
+  'ミニトマト':{from:'4月中旬',to:'5月下旬',note:'育苗6〜8週で定植適期'},
+  'きゅうり':{from:'4月下旬',to:'5月下旬',note:'育苗3〜4週で定植適期'},
+  'ゴーヤ':{from:'5月上旬',to:'6月上旬',note:'育苗3〜4週。気温20℃以上'},
+  'なす':{from:'5月上旬',to:'5月下旬',note:'育苗8〜10週で定植適期'},
+  'ピーマン':{from:'5月上旬',to:'5月下旬',note:'育苗8〜10週で定植適期'},
+  'オクラ':{from:'5月中旬',to:'6月上旬',note:'育苗2〜3週。地温20℃以上'},
+  'かぼちゃ':{from:'4月下旬',to:'5月中旬',note:'育苗3〜4週で定植適期'},
+  'ズッキーニ':{from:'4月下旬',to:'5月中旬',note:'育苗3〜4週で定植適期'},
+  'とうもろこし':{from:'4月下旬',to:'5月下旬',note:'直播推奨'},
+  '枝豆':{from:'4月下旬',to:'6月',note:'直播または育苗2週'},
+  'えだまめ':{from:'4月下旬',to:'6月',note:'直播または育苗2週'},
+  'しょうが':{from:'4月下旬',to:'5月中旬',note:'種しょうがを浅植え'},
+  'いんげん':{from:'4月下旬',to:'5月下旬',note:'直播推奨'},
+};
+
+var PLAN_TASKS=[
+  {pri:'high',date:'4/20〜4/26',cat:'土作り',task:'A4・A5 緑肥鋤き込み',ridge:'A4・A5',note:'イタリアンライグラスを鋤き込む。堆肥・石灰も投入。2週間後に夏野菜定植可'},
+  {pri:'high',date:'4/20〜4/30',cat:'植え付け',task:'しょうが 植え付け',ridge:'B6',note:'地温15℃以上を確認。種しょうがを浅植え。マルチング推奨'},
+  {pri:'high',date:'4/20〜5/10',cat:'植え付け',task:'ミニトマト 定植',ridge:'C7・C8',note:'育苗済みなら今が適期。支柱・誘引の準備を先に'},
+  {pri:'high',date:'4/20〜5/31',cat:'管理',task:'じゃがいも 土寄せ・収穫準備',ridge:'A9',note:'梅雨前6月上旬収穫目標。開花後3週間で収穫時期。芋の露出(土寄せ)と病斑確認。増えるなら5/5～5/9までに殺菌。水やり・追肥なし。'},
+  {pri:'high',date:'4/20〜5/31',cat:'管理',task:'玉ねぎ 倒伏確認・収穫準備',ridge:'A1・A10',note:'葉が自然に倒れたらすぐ収穫。収穫後に地まめ植え付け準備'},
+  {pri:'high',date:'4/27〜5/10',cat:'植え付け',task:'きゅうり 定植',ridge:'B7・C9',note:'育苗3〜4週で定植適期。未育苗なら直播き可。支柱・ネット準備'},
+  {pri:'high',date:'4/27〜5/10',cat:'播種',task:'とうもろこし 第1弾 播種',ridge:'C3・C4・C10',note:'点播き3粒→2本立てに間引き。鳥よけネット必須'},
+  {pri:'high',date:'4/27〜5/10',cat:'播種',task:'いんげん 播種',ridge:'B4',note:'直播き。株間25〜30cm。後作でとうもろこし予定'},
+  {pri:'mid',date:'4/27〜5/10',cat:'植え付け',task:'かぼちゃ 定植 or 播種',ridge:'A2',note:'未播種なら今週中に。つるの伸ばし方向を決めてから植える'},
+  {pri:'mid',date:'4/27〜5/10',cat:'植え付け',task:'ピーマン 定植',ridge:'B2',note:'育苗苗を確認。風よけ支柱を早めに立てる'},
+  {pri:'mid',date:'5/4〜5/15',cat:'播種',task:'枝豆 播種',ridge:'A5・B3',note:'直播き。鳥よけネット必須。株間20〜25cm'},
+  {pri:'mid',date:'5/4〜5/15',cat:'植え付け',task:'ズッキーニ 定植 or 播種',ridge:'C6',note:'大型になるので株間80cm以上確保'},
+  {pri:'mid',date:'5/4〜5/15',cat:'土作り',task:'地まめ植え付け前 畝準備',ridge:'A1・A10',note:'玉ねぎ収穫後すぐ準備。石灰不要（酸性土好み）'},
+  {pri:'mid',date:'5/10〜5/20',cat:'植え付け',task:'ゴーヤ 定植',ridge:'B7',note:'気温20℃以上になってから。ネット・誘引準備'},
+  {pri:'mid',date:'5/10〜5/20',cat:'播種',task:'オクラ 播種 or 定植',ridge:'B5',note:'地温20℃以上必要。直播き推奨。株間30cm'},
+  {pri:'mid',date:'5/10〜5/20',cat:'植え付け',task:'地まめ 植え付け',ridge:'A1・A10',note:'玉ねぎ収穫後に植え付け。株間25〜30cm。深植えしない'},
+  {pri:'low',date:'5/15〜5/20',cat:'播種',task:'とうもろこし 第2弾 播種',ridge:'C3・C4など',note:'第1弾と2〜3週ずらし。受粉のため複数列で'},
+];
+
+function renderPlan(){
+  var priColor={high:'#fadbd8',mid:'#fef9e7',low:'#eafaf1'};
+  var priBorder={high:'#e55039',mid:'#e67e22',low:'#6ab04c'};
+  var catIcon={'土作り':'🌱','播種':'🌰','植え付け':'🌿','管理':'🔧'};
+
+  // 育苗中
+  var nursery=recs.filter(function(r){return r.type==='育苗'||r.ridge==='ポット/育苗中'});
+  var nl=document.getElementById('nursery-list');
+  if(!nursery.length){
+    nl.innerHTML='<div class="empty">作業記録に育苗の登録がありません</div>';
+  }else{
+    var seen={};
+    nl.innerHTML=nursery.filter(function(r){var k=r.crop;if(seen[k])return false;seen[k]=true;return true;})
+    .map(function(r){
+      var g=PLANT_GUIDE[r.crop];
+      var days=Math.floor((Date.now()-new Date(r.date).getTime())/864e5);
+      var gHtml=g?'<div style="font-size:11px;color:#27ae60;margin-top:3px">📅 定植適期：'+g.from+'〜'+g.to+'　'+g.note+'</div>':'';
+      return'<div class="ri" style="border-left-color:#16a085"><div style="flex:1">'+
+        '<strong style="font-size:13px">'+r.crop+'</strong>'+
+        '<span class="badge bg" style="margin-left:6px">育苗中</span>'+
+        (r.pots?'<span style="font-size:11px;color:#5c4033;margin-left:6px">🪴'+r.pots+'ポット</span>':'')+
+        '<div class="rm">播種から'+days+'日</div>'+gHtml+'</div></div>';
+    }).join('');
+  }
+
+  // 作業リスト
+  var pl=document.getElementById('plan-list');
+  pl.innerHTML=PLAN_TASKS.map(function(t){
+    return'<div style="padding:10px;border-radius:8px;margin-bottom:8px;background:'+priColor[t.pri]+';border-left:3px solid '+priBorder[t.pri]+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px;flex-wrap:wrap">'
+      +'<div><span style="font-size:13px;font-weight:700">'+(catIcon[t.cat]||'')+' '+t.task+'</span>'
+      +'<span class="badge bi" style="margin-left:6px;font-size:10px">'+t.ridge+'</span></div>'
+      +'<span style="font-size:11px;color:#5c4033;white-space:nowrap">'+t.date+'</span></div>'
+      +(t.note?'<div style="font-size:11px;color:#5c4033;margin-top:4px">'+t.note+'</div>':'')
+      +'</div>';
+  }).join('');
+}
+
+// ========================================
+// 初期化
+// ========================================
+document.getElementById('r-date').value=new Date().toISOString().slice(0,10);
+populateSel();
+populateCropList();
+renderGrid();
+loadFromGAS();
+</script>
+</body>
+</html>
