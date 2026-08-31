@@ -204,6 +204,18 @@ textarea{min-height:60px;resize:vertical}
     <div class="card-t">📋 やるべき作業 9/1〜10/1</div>
     <div id="plan-list"></div>
   </div>
+  <div class="card">
+    <div class="card-t">📋 やるべき作業 10/1〜10/31</div>
+    <div id="plan-list-oct"></div>
+  </div>
+  <div class="card">
+    <div class="card-t">📋 やるべき作業 11/1〜11/30</div>
+    <div id="plan-list-nov"></div>
+  </div>
+  <div class="card">
+    <div class="card-t">📋 やるべき作業 12/1〜翌春</div>
+    <div id="plan-list-winter"></div>
+  </div>
 </div>
 
 <div id="p-memo" class="panel">
@@ -1423,10 +1435,65 @@ var PLAN_TASKS=[
   {date:'9/25〜10/1',ridge:'B7',cat:'管理',pri:'mid',task:'にんにくを植えられる空き場所を確認',note:'秋インゲン5穴と秋きゅうり2株を残す。植え付けは地温20℃前後になる10月を目安にする'},
 ];
 
+var PLAN_TASKS_OCT=[
+  {date:'10/1〜10/10',ridge:'プランター・畝端',cat:'播種',pri:'mid',task:'つやひめ・はつか大根を2回目播種',note:'食べ切れる量だけ時間差で播き、発芽までは乾かさない'},
+  {date:'10/1〜10/15',ridge:'プランター・畝端',cat:'播種',pri:'mid',task:'おいしい花菜を播種',note:'春の菜花用。少量を直播し、混み合った所は本葉2〜3枚で間引く'},
+  {date:'10/5〜10/15',ridge:'B1・C7・C8畝端',cat:'播種',pri:'mid',task:'春菊（関東株張中葉）を2回目播種',note:'1回目と収穫期をずらす。薄く覆土して発芽まで保湿'},
+  {date:'10/5〜10/10',ridge:'深鉢',cat:'播種',pri:'low',task:'パクチーを2回目播種',note:'丸い種を軽く割って直播し、発芽までは乾かさない'},
+  {date:'10/1〜10/15',ridge:'C4',cat:'管理',pri:'high',task:'玉ねぎ苗を間引き・除草',note:'混み合う所を約1cm間隔にし、倒さないよう軽く除草。乾燥時だけ水やり'},
+  {date:'10/1〜10/15',ridge:'B5・C3',cat:'管理',pri:'high',task:'大根を最終間引き・追肥・土寄せ',note:'本葉5〜6枚で1本立ち。株間へ少量追肥し、根元へ土を寄せる'},
+  {date:'10/1〜10/15',ridge:'B1・C7〜C10',cat:'管理',pri:'high',task:'キャベツ・白菜・茎ブロッコリーを追肥',note:'定植2〜3週後を目安に株間へ追肥して土寄せ。防虫ネット内も週1回確認'},
+  {date:'草丈10cm時',ridge:'C0・C5',cat:'管理',pri:'high',task:'デジマの芽かき・1回目の追肥・土寄せ',note:'丈夫な芽を1〜2本残し、イモへ光が当たらないよう株元へ十分に土を寄せる'},
+  {date:'10/5〜10/15',ridge:'B7',cat:'土作り',pri:'high',task:'ホワイト六片の植え場所を準備',note:'秋インゲン5穴・秋きゅうり2株を残して場所を確保。空きがなければ別の畝端を用意'},
+  {date:'10/10〜10/20',ridge:'B7',cat:'植え付け',pri:'high',task:'にんにく（ホワイト六片）を植え付け',note:'地温20℃前後が目安。大きく健全な鱗片を、尖った方を上にして植える'},
+  {date:'10/10〜10/25',ridge:'A3・C6',cat:'植え付け',pri:'high',task:'イチゴ苗を定植',note:'クラウンを埋めず、ランナー跡を畝の内側へ向ける。A3にほうれん草は入れない'},
+  {date:'10/10〜10/25',ridge:'B4',cat:'管理',pri:'mid',task:'にんじんの収穫を開始',note:'太った株から順に抜き、肩が土から出た所には土をかぶせて緑化を防ぐ'},
+  {date:'10/15〜10/25',ridge:'A4・A5',cat:'収穫',pri:'mid',task:'地まめを試し掘り・収穫',note:'葉が黄ばみ始めたら1株確認し、莢が十分太っていれば晴天日にまとめて掘る'},
+  {date:'10/15〜10/31',ridge:'A7〜A9',cat:'収穫',pri:'high',task:'さつまいもを試し掘り・収穫',note:'霜の前、土が乾いた日に掘る。傷を付けず、日陰で乾かしてから保存'},
+  {date:'10/15〜10/25',ridge:'B2・C1・C2',cat:'土作り',pri:'high',task:'そら豆・えんどうの畝を準備',note:'マメ科なので窒素肥料は控えめ。排水を確保し、播種場所を札で区分する'},
+  {date:'10/25〜10/31',ridge:'C1・C2',cat:'播種',pri:'high',task:'スナップ・絹さや・グリーンピースを直播',note:'C1はスナップと絹さやを半分ずつ、C2はグリーンピース。古い絹さや種は多めに播く'},
+  {date:'10/25〜10/31',ridge:'B2・ポット',cat:'播種',pri:'high',task:'お多福そら豆をポット播種',note:'1ポット1粒をお歯黒側を斜め下にして半分ほど土へ挿す。11月上旬までに完了'},
+  {date:'10/20〜10/31',ridge:'A1・A10',cat:'土作り',pri:'high',task:'玉ねぎ定植畝を準備',note:'A10は浜笑・てまり詩、A1はアトン・晩生こがね・赤玉葱少量。定植の1〜2週前に整える'},
+];
+
+var PLAN_TASKS_NOV=[
+  {date:'11/1〜11/5',ridge:'B2・C1・C2',cat:'播種',pri:'high',task:'そら豆・えんどうの播種を完了',note:'早播きで大株にしない。鳥害がある場所は発芽までネットを掛ける'},
+  {date:'11/1〜11/10',ridge:'B6',cat:'収穫',pri:'high',task:'しょうがを収穫',note:'葉が黄変したら霜の前に掘る。種用は傷のない塊を分けて保存する'},
+  {date:'しょうが収穫後',ridge:'B6',cat:'播種',pri:'mid',task:'イタリアンライグラスを播種',note:'残根と草を除き、表面をならして均一に散播し、薄く覆土して鎮圧する'},
+  {date:'草丈30cm時',ridge:'C0・C5',cat:'管理',pri:'high',task:'デジマを2回目土寄せ',note:'株元へ大きく土を寄せてかまぼこ形にし、緑化と倒伏を防ぐ'},
+  {date:'11/1〜11/10',ridge:'A10',cat:'植え付け',pri:'high',task:'浜笑・てまり詩を定植',note:'草丈20〜25cm・鉛筆よりやや細い苗を選び、白い部分が少し見える浅植えにする'},
+  {date:'11/10〜11/25',ridge:'A1',cat:'植え付け',pri:'high',task:'アトン・晩生こがね・赤玉葱を定植',note:'赤玉葱は少量区画へ。細すぎる苗と太すぎる苗を避け、株間12〜15cm'},
+  {date:'11/10〜11/25',ridge:'B1',cat:'植え付け',pri:'high',task:'春キャベツ（味春）を定植',note:'丈夫な苗をB1後半へ定植し、活着まで水切れと虫害を確認する'},
+  {date:'11月中旬',ridge:'B1・C7〜C10',cat:'管理',pri:'mid',task:'秋冬アブラナ科の最終追肥',note:'生育を見て少量追肥。白菜は結球開始後の肥料切れを避ける'},
+  {date:'11月中',ridge:'B5・C3・B4',cat:'収穫',pri:'mid',task:'大根・にんじんを太ったものから収穫',note:'一度に抜かず、必要量ずつ収穫。裂根防止のため極端な乾湿差に注意'},
+  {date:'11月中',ridge:'B7',cat:'管理',pri:'mid',task:'にんにくの発芽確認・除草',note:'芽が出ない穴は腐敗を確認。植え直すなら11月前半までに行う'},
+  {date:'11/15〜11/30',ridge:'B2・C1・C2',cat:'管理',pri:'mid',task:'そら豆・えんどうの発芽確認と間引き',note:'えんどうは丈夫な2本程度、そら豆は1本で冬越し。必要なら短い支柱を添える'},
+  {date:'11月下旬',ridge:'B2・C1・C2',cat:'管理',pri:'mid',task:'豆類の防風・防寒準備',note:'株元に敷きわらを置き、寒風が強い場所は低いネットで保護する'},
+  {date:'11月中',ridge:'A2',cat:'管理',pri:'low',task:'長ネギを追肥・土寄せ',note:'葉の分岐点を埋めない高さまで土を寄せ、白い部分を伸ばす'},
+  {date:'11月下旬',ridge:'A3・C6',cat:'管理',pri:'low',task:'イチゴの枯れ葉・不要ランナーを除去',note:'株元を蒸らさず、寒くなったら敷きわら等で泥はねを防ぐ'},
+  {date:'霜の前まで',ridge:'A4・A5・A7〜A9',cat:'収穫',pri:'high',task:'地まめ・さつまいもの残りを収穫',note:'霜に当てない。収穫後は畝の残渣を片付けておく'},
+];
+
+var PLAN_TASKS_WINTER=[
+  {date:'12/1〜12/15',ridge:'C0・C5',cat:'収穫',pri:'high',task:'デジマを収穫',note:'茎葉が枯れた後の晴天日に掘る。表面を乾かし、腐敗や虫食いを除いて冷暗所保存'},
+  {date:'12月上旬',ridge:'C7・C8',cat:'管理',pri:'mid',task:'白菜を防寒',note:'結球した株は外葉を持ち上げて上部をひもで軽く縛り、寒害を防ぐ'},
+  {date:'12月〜',ridge:'B1・B4・B5・C3・C7〜C10',cat:'収穫',pri:'mid',task:'冬野菜を必要量ずつ収穫',note:'大根・にんじん・白菜・冬キャベツ・茎ブロッコリーを食べる分から順に収穫'},
+  {date:'12月中',ridge:'C11・C12',cat:'管理',pri:'low',task:'アスパラの枯れ茎を片付け',note:'茎葉が完全に黄変してから地際で切り、病害予防のため畑外へ出す'},
+  {date:'12月〜2月',ridge:'A1・A10',cat:'管理',pri:'mid',task:'玉ねぎの浮き苗・霜柱・雑草を確認',note:'浮いた苗は根元を押さえて戻す。冬は過湿にせず、乾燥が続く時だけ水やり'},
+  {date:'12月〜2月',ridge:'B2・C1・C2',cat:'管理',pri:'mid',task:'そら豆・えんどうを小苗で冬越し',note:'伸ばしすぎず、倒れた株は短い支柱へ固定。寒風時は敷きわら・ネットを補修'},
+  {date:'12月〜2月',ridge:'B7',cat:'管理',pri:'low',task:'にんにくの除草・排水確認',note:'冬は水を与えすぎない。雨後に水が溜まる所は排水溝を直す'},
+  {date:'12月〜2月',ridge:'A3・C6',cat:'管理',pri:'low',task:'イチゴの枯れ葉取り・防寒',note:'クラウンを埋めず、泥はね防止の敷きわらを維持する'},
+  {date:'1月下旬〜2月上旬',ridge:'A1・A10',cat:'管理',pri:'high',task:'玉ねぎの1回目追肥',note:'株元ではなく条間へ少量施し、葉へ肥料を付けない'},
+  {date:'2月',ridge:'B7',cat:'管理',pri:'mid',task:'にんにくを追肥',note:'春の生育再開前に少量追肥し、土が固ければ表面だけ軽くほぐす'},
+  {date:'2月中〜下旬',ridge:'B2・C1・C2',cat:'管理',pri:'high',task:'そら豆・えんどうの支柱・ネットを整備',note:'伸び始める前に本支柱と誘引ネットを設置し、株元を傷めない'},
+  {date:'2月下旬〜',ridge:'プランター・畝端',cat:'収穫',pri:'low',task:'菜花の収穫を開始',note:'つぼみが締まっているうちに摘み、脇芽を伸ばして繰り返し収穫する'},
+  {date:'3月〜4月',ridge:'B1',cat:'収穫',pri:'mid',task:'春キャベツ（味春）を順次収穫',note:'球を押して締まりを確認し、割れる前に食べる分から収穫する'},
+];
+
 function renderPlan(){
   var priColor={high:'#fadbd8',mid:'#fef9e7',low:'#eafaf1'};
   var priBorder={high:'#e55039',mid:'#e67e22',low:'#6ab04c'};
-  var catIcon={'土作り':'🌱','播種':'🌰','植え付け':'🌿','管理':'🔧'};
+  var catIcon={'土作り':'🌱','播種':'🌰','植え付け':'🌿','管理':'🔧','収穫':'🥕'};
   var finishedSummerNursery={
     'えだまめ':1,'枝豆':1,'とうもろこし':1,'オクラ':1,'きゅうり':1,
     'かぼちゃ':1,'ゴーヤ':1,'ズッキーニ':1,'なす':1,'トマト':1,'ミニトマト':1,
@@ -1457,16 +1524,22 @@ function renderPlan(){
   }
 
   // 作業リスト
-  var pl=document.getElementById('plan-list');
-  pl.innerHTML=PLAN_TASKS.map(function(t){
-    return'<div style="padding:10px;border-radius:8px;margin-bottom:8px;background:'+priColor[t.pri]+';border-left:3px solid '+priBorder[t.pri]+'">'
+  function renderTaskList(id,tasks){
+    var pl=document.getElementById(id);
+    pl.innerHTML=tasks.map(function(t){
+      return'<div style="padding:10px;border-radius:8px;margin-bottom:8px;background:'+priColor[t.pri]+';border-left:3px solid '+priBorder[t.pri]+'">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px;flex-wrap:wrap">'
       +'<div><span style="font-size:13px;font-weight:700">'+(catIcon[t.cat]||'')+' '+t.task+'</span>'
       +'<span class="badge bi" style="margin-left:6px;font-size:10px">'+t.ridge+'</span></div>'
       +'<span style="font-size:11px;color:#5c4033;white-space:nowrap">'+t.date+'</span></div>'
       +(t.note?'<div style="font-size:11px;color:#5c4033;margin-top:4px">'+t.note+'</div>':'')
       +'</div>';
-  }).join('');
+    }).join('');
+  }
+  renderTaskList('plan-list',PLAN_TASKS);
+  renderTaskList('plan-list-oct',PLAN_TASKS_OCT);
+  renderTaskList('plan-list-nov',PLAN_TASKS_NOV);
+  renderTaskList('plan-list-winter',PLAN_TASKS_WINTER);
 }
 
 // ========================================
