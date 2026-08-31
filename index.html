@@ -1427,10 +1427,16 @@ function renderPlan(){
   var priColor={high:'#fadbd8',mid:'#fef9e7',low:'#eafaf1'};
   var priBorder={high:'#e55039',mid:'#e67e22',low:'#6ab04c'};
   var catIcon={'土作り':'🌱','播種':'🌰','植え付け':'🌿','管理':'🔧'};
+  var finishedSummerNursery={
+    'えだまめ':1,'枝豆':1,'とうもろこし':1,'オクラ':1,'きゅうり':1,
+    'かぼちゃ':1,'ゴーヤ':1,'ズッキーニ':1,'なす':1,'トマト':1,'ミニトマト':1,
+    'パプリカ':1,'ピーマン':1,'こどもピーマン':1,'ししとう':1,'唐辛子':1,'とうがらし':1,
+    'しょうが':1
+  };
 
   // 育苗中
   var nursery=recs.filter(function(r){
-    return r.crop!=='花'&&(r.type==='育苗'||r.ridge==='ポット/育苗中');
+    return r.crop!=='花'&&!finishedSummerNursery[r.crop]&&(r.type==='育苗'||r.ridge==='ポット/育苗中');
   });
   var nl=document.getElementById('nursery-list');
   if(!nursery.length){
