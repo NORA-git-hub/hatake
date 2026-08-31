@@ -201,7 +201,7 @@ textarea{min-height:60px;resize:vertical}
     <div id="nursery-list"></div>
   </div>
   <div class="card">
-    <div class="card-t">📋 やるべき作業 4/20〜5/20</div>
+    <div class="card-t">📋 やるべき作業 9/1〜10/1</div>
     <div id="plan-list"></div>
   </div>
 </div>
@@ -1318,7 +1318,9 @@ function renderPlan(){
   var catIcon={'土作り':'🌱','播種':'🌰','植え付け':'🌿','管理':'🔧'};
 
   // 育苗中
-  var nursery=recs.filter(function(r){return r.type==='育苗'||r.ridge==='ポット/育苗中'});
+  var nursery=recs.filter(function(r){
+    return r.crop!=='花'&&(r.type==='育苗'||r.ridge==='ポット/育苗中');
+  });
   var nl=document.getElementById('nursery-list');
   if(!nursery.length){
     nl.innerHTML='<div class="empty">作業記録に育苗の登録がありません</div>';
