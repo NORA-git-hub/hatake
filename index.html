@@ -79,6 +79,18 @@ textarea{min-height:60px;resize:vertical}
 .tl-scroll table th.tl-fix{background:#f0ece8;z-index:4}
 .tl-scroll table tfoot th{position:sticky;bottom:0;z-index:2;background:#f0ece8}
 .tl-scroll table tfoot th.tl-fix{z-index:4}
+.map-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.map-controls select{width:auto;min-width:90px;padding:6px 28px 6px 9px;font-size:12px}
+.field-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.field-col{background:#f7f3ed;border:1px solid #ded4ca;border-radius:9px;padding:8px}
+.field-col-t{font-weight:700;font-size:13px;color:#5c4033;margin-bottom:7px;padding:0 2px}
+.map-ridge{display:grid;grid-template-columns:43px minmax(0,1fr);gap:6px;align-items:start;background:#fff;border:1px solid #e8e0d8;border-radius:7px;padding:6px;margin-bottom:5px;min-height:37px}
+.map-ridge:last-child{margin-bottom:0}
+.map-ridge-name{font-weight:700;font-size:12px;color:#3d2b1f;padding-top:2px}
+.map-crops{display:flex;gap:3px;flex-wrap:wrap;min-width:0}
+.map-crops .cc{margin:0;font-size:10px;line-height:1.35}
+.map-empty{font-size:10px;color:#aaa;padding-top:3px}
+@media(max-width:720px){.field-map{grid-template-columns:1fr}.map-ridge{grid-template-columns:48px minmax(0,1fr)}}
 .tettai-extra{grid-column:1/-1;display:none}
 .tettai-extra.show{display:block}
 .pot-inner{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -1035,10 +1047,36 @@ function closeMo(e){if(!e||e.target===document.getElementById('modal'))document.
 // ========================================
 // スケジュール表
 // ========================================
+var tlMapYear=2026;
+var tlMapSeason='秋';
+
 function renderTL(){
   var years=[2024,2025,2026,2027];
   var seasons=['春','夏','秋','冬'];
   var eRaw=getEffectiveRAW();
+  var mapGroups=[
+    {name:'A列',ridges:['A7','A8','A9','A10','A1','A2','A3','A4','A5','A6']},
+    {name:'B列',ridges:['B1','B2','B3','B4','B5','B6','B7']},
+    {name:'C列',ridges:['C1','C2','C0','C3','C4','C5','C6','C7','C8','C9','C10','C11','C12']}
+  ];
+  var mapHtml='<div class="card"><div class="card-t">畑の畝マップ</div>'
+    +'<div class="map-controls"><span style="font-size:12px;font-weight:700;color:#5c4033">表示：</span>'
+    +'<select onchange="tlMapYear=Number(this.value);renderTL()">'
+    +years.map(function(yr){return'<option value="'+yr+'"'+(yr===tlMapYear?' selected':'')+'>'+yr+'年</option>'}).join('')+'</select>'
+    +'<select onchange="tlMapSeason=this.value;renderTL()">'
+    +seasons.map(function(s){return'<option value="'+s+'"'+(s===tlMapSeason?' selected':'')+'>'+s+'</option>'}).join('')+'</select>'
+    +'</div><div class="field-map">';
+  mapGroups.forEach(function(g){
+    mapHtml+='<div class="field-col"><div class="field-col-t">'+g.name+'</div>';
+    g.ridges.forEach(function(r){
+      var crops=eRaw.filter(function(d){return d.畝===r&&d.年===tlMapYear&&d.季節===tlMapSeason});
+      mapHtml+='<div class="map-ridge"><div class="map-ridge-name">畝 '+r+'</div><div class="map-crops">'
+        +(crops.length?crops.map(function(c){return'<span class="cc '+cropCls(c.作物,c.科)+'">'+c.作物+'</span>'}).join(''):'<span class="map-empty">予定なし</span>')
+        +'</div></div>';
+    });
+    mapHtml+='</div>';
+  });
+  mapHtml+='</div></div>';
   // ヘッダー1行（24春 24夏…）
   var hd='<thead><tr><th class="tl-fix">畝</th>';
   years.forEach(function(yr){
@@ -1067,7 +1105,7 @@ function renderTL(){
   });
   var ft=hd.replace('<thead>','<tfoot>').replace('</thead>','</tfoot>');
   document.getElementById('tl-cards').innerHTML=
-    '<div class="card"><div class="card-t">スケジュール（3年分）</div>'
+    mapHtml+'<div class="card"><div class="card-t">スケジュール（2024〜2027年）</div>'
     +'<div class="tl-scroll"><table>'+hd+'<tbody>'+rows+'</tbody>'+ft+'</table></div></div>';
 }
 
