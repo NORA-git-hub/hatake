@@ -1450,7 +1450,7 @@ var PLANT_GUIDE={
   'しょうが':{from:'4月下旬',to:'5月中旬',note:'種しょうがを浅植え'},
   'いんげん':{from:'4月下旬',to:'5月下旬',note:'直播推奨'},
   '白菜（黄ごころ85）':{from:'9月15日',to:'9月25日',note:'本葉4〜5枚でC7・C8へ定植'},
-  'CRアルチャン':{from:'9月20日',to:'9月30日',note:'本葉4〜5枚でC8へ定植'},
+  '白菜（CRアルチャン）':{from:'9月20日',to:'9月30日',note:'本葉4〜5枚でC8へ定植'},
   'ラディッシュ':{from:'9月7日',to:'9月12日',note:'根を崩さず、本葉2〜3枚で早めに定植'},
   'スティックセニョール':{from:'9月10日',to:'9月20日',note:'本葉4〜5枚の丈夫な苗を定植'},
   'キャベツ(新藍)':{from:'9月10日',to:'9月20日',note:'本葉4〜5枚の丈夫な苗をB1へ定植'},
@@ -1545,7 +1545,7 @@ function renderPlan(){
   // 育苗中：ポット播種記録だけを対象にし、品種別の最新記録を表示
   function nurseryCropName(r){
     var note=((r.note||'')+' '+(r.potNote||'')).trim();
-    if(r.crop==='白菜'&&note.indexOf('CRアルチャン')>=0)return'CRアルチャン';
+    if(r.crop==='CRアルチャン'||(r.crop==='白菜'&&note.indexOf('CRアルチャン')>=0))return'白菜（CRアルチャン）';
     return r.crop;
   }
   var nurseryRecords=recs.filter(function(r){
@@ -1565,9 +1565,13 @@ function renderPlan(){
     var k=r.crop;
     if(!nurseryByCrop[k]){
       nurseryByCrop[k]=r;
+      if(k==='スティックセニョール')nurseryByCrop[k].firstSowingDate=r.date;
     }else{
       if(!nurseryByCrop[k].pots&&r.pots)nurseryByCrop[k].pots=r.pots;
       if(!nurseryByCrop[k].transplants&&r.transplants)nurseryByCrop[k].transplants=r.transplants;
+      if(k==='スティックセニョール'&&new Date(r.date).getTime()<new Date(nurseryByCrop[k].firstSowingDate).getTime()){
+        nurseryByCrop[k].firstSowingDate=r.date;
+      }
     }
   });
   var nursery=Object.keys(nurseryByCrop).map(function(k){return nurseryByCrop[k]});
@@ -1577,13 +1581,19 @@ function renderPlan(){
   }else{
     nl.innerHTML=nursery.map(function(r){
       var g=PLANT_GUIDE[r.crop];
-      var days=Math.floor((Date.now()-new Date(r.date).getTime())/864e5);
+      var sowingDate=(r.crop==='スティックセニョール'&&r.firstSowingDate)?r.firstSowingDate:r.date;
+      var days=Math.floor((Date.now()-new Date(sowingDate).getTime())/864e5);
+      var startHtml='';
+      if(r.crop==='スティックセニョール'&&r.firstSowingDate){
+        var ds=String(r.firstSowingDate);
+        startHtml='<div class="rm">'+Number(ds.slice(5,7))+'/'+Number(ds.slice(8,10))+'からポット育苗</div>';
+      }
       var gHtml=g?'<div style="font-size:11px;color:#27ae60;margin-top:3px">📅 定植適期：'+g.from+'〜'+g.to+'　'+g.note+'</div>':'';
       return'<div class="ri" style="border-left-color:#16a085"><div style="flex:1">'+
         '<strong style="font-size:13px">'+r.crop+'</strong>'+
         '<span class="badge bg" style="margin-left:6px">育苗中</span>'+
         (r.pots?'<span style="font-size:11px;color:#5c4033;margin-left:6px">🪴'+r.pots+'ポット</span>':'')+
-        '<div class="rm">播種から'+days+'日</div>'+gHtml+'</div></div>';
+        '<div class="rm">播種から'+days+'日</div>'+startHtml+gHtml+'</div></div>';
     }).join('');
   }
 
