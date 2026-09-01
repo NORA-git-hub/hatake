@@ -1449,6 +1449,12 @@ var PLANT_GUIDE={
   'えだまめ':{from:'4月下旬',to:'6月',note:'直播または育苗2週'},
   'しょうが':{from:'4月下旬',to:'5月中旬',note:'種しょうがを浅植え'},
   'いんげん':{from:'4月下旬',to:'5月下旬',note:'直播推奨'},
+  '白菜（黄ごころ85）':{from:'9月15日',to:'9月25日',note:'本葉4〜5枚でC7・C8へ定植'},
+  'CRアルチャン':{from:'9月20日',to:'9月30日',note:'本葉4〜5枚でC8へ定植'},
+  'ラディッシュ':{from:'9月7日',to:'9月12日',note:'根を崩さず、本葉2〜3枚で早めに定植'},
+  'スティックセニョール':{from:'9月10日',to:'9月20日',note:'本葉4〜5枚の丈夫な苗を定植'},
+  'キャベツ(新藍)':{from:'9月10日',to:'9月20日',note:'本葉4〜5枚の丈夫な苗をB1へ定植'},
+  'ブロッコリー':{from:'9月10日',to:'9月20日',note:'本葉4〜5枚の丈夫な苗を定植'},
 };
 
 var PLAN_TASKS=[
@@ -1536,17 +1542,40 @@ function renderPlan(){
     'しょうが':1
   };
 
-  // 育苗中
-  var nursery=recs.filter(function(r){
-    return r.crop!=='花'&&!finishedSummerNursery[r.crop]&&(r.type==='育苗'||r.ridge==='ポット/育苗中');
+  // 育苗中：ポット播種記録だけを対象にし、品種別の最新記録を表示
+  function nurseryCropName(r){
+    var note=((r.note||'')+' '+(r.potNote||'')).trim();
+    if(r.crop==='白菜'&&note.indexOf('CRアルチャン')>=0)return'CRアルチャン';
+    return r.crop;
+  }
+  var nurseryRecords=recs.filter(function(r){
+    var isPotSowing=r.type==='育苗'||(r.type==='播種'&&r.ridge==='ポット/育苗中');
+    var crop=nurseryCropName(r);
+    return r.crop!=='花'&&!finishedSummerNursery[crop]&&isPotSowing;
+  }).map(function(r){
+    var x={};
+    Object.keys(r).forEach(function(k){x[k]=r[k]});
+    x.crop=nurseryCropName(r);
+    return x;
+  }).sort(function(a,b){return new Date(b.date).getTime()-new Date(a.date).getTime()});
+
+  // 最新の播種・播き直し日を優先し、ポット数が空なら過去の同作物記録から補完
+  var nurseryByCrop={};
+  nurseryRecords.forEach(function(r){
+    var k=r.crop;
+    if(!nurseryByCrop[k]){
+      nurseryByCrop[k]=r;
+    }else{
+      if(!nurseryByCrop[k].pots&&r.pots)nurseryByCrop[k].pots=r.pots;
+      if(!nurseryByCrop[k].transplants&&r.transplants)nurseryByCrop[k].transplants=r.transplants;
+    }
   });
+  var nursery=Object.keys(nurseryByCrop).map(function(k){return nurseryByCrop[k]});
   var nl=document.getElementById('nursery-list');
   if(!nursery.length){
     nl.innerHTML='<div class="empty">作業記録に育苗の登録がありません</div>';
   }else{
-    var seen={};
-    nl.innerHTML=nursery.filter(function(r){var k=r.crop;if(seen[k])return false;seen[k]=true;return true;})
-    .map(function(r){
+    nl.innerHTML=nursery.map(function(r){
       var g=PLANT_GUIDE[r.crop];
       var days=Math.floor((Date.now()-new Date(r.date).getTime())/864e5);
       var gHtml=g?'<div style="font-size:11px;color:#27ae60;margin-top:3px">📅 定植適期：'+g.from+'〜'+g.to+'　'+g.note+'</div>':'';
