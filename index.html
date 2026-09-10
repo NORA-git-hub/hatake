@@ -216,8 +216,8 @@ textarea{min-height:60px;resize:vertical}
 
 <div id="p-plan" class="panel">
   <div class="card" style="border-left:4px solid #4a7c59">
-    <div class="card-t">🌱 2026年秋冬 作業計画｜9/10 簡潔版</div>
-    <div class="rn">過湿時は耕起・定植を見送る。日付と苗の状態を確認。</div>
+    <div class="card-t">🌱 2026年秋冬 作業計画｜9/10 苗の生育反映</div>
+    <div class="rn">日程が早い順に表示。定植日は目安とし、苗の育ちと土の乾き具合を優先。</div>
   </div>
   <div class="card">
     <div class="card-t">🪴 育苗中（ポット・苗床）→ 定植タイミング</div>
@@ -1502,27 +1502,29 @@ var PLANT_GUIDE={
   'えだまめ':{from:'4月下旬',to:'6月',note:'直播または育苗2週'},
   'しょうが':{from:'4月下旬',to:'5月中旬',note:'種しょうがを浅植え'},
   'いんげん':{from:'4月下旬',to:'5月下旬',note:'直播推奨'},
-  '白菜（黄ごころ85）':{from:'9月15日',to:'9月20日',note:'C7全体＋C8半畝へ先に定植。本葉4〜5枚が目安'},
+  '白菜（黄ごころ85）':{from:'9月15日',to:'9月20日',note:'現在本葉2〜3枚。本葉4〜5枚になった苗からC7全体＋C8半畝へ。過湿時は待つ'},
   '白菜（CRアルチャン）':{from:'9月25日',to:'10月1日',note:'ミニトマト撤収後の半畝へ定植。C8に仮配置、本葉4〜5枚が目安'},
   'ラディッシュ':{from:'9月7日',to:'9月12日',note:'根を崩さず、本葉2〜3枚で早めに定植'},
-  'スティックセニョール':{from:'9月10日',to:'9月20日',note:'本葉4〜5枚の丈夫な苗を定植'},
-  'キャベツ(新藍)':{from:'9月10日',to:'9月20日',note:'本葉4〜5枚の丈夫な苗をB1へ定植'},
+  'スティックセニョール':{from:'9月13日',to:'9月22日',note:'大苗（本葉4〜5枚）は9/13〜17、小苗（本葉2〜3枚）は9/17〜22に生育を見て分けて定植。過湿時は待つ'},
+  'キャベツ(新藍)':{from:'9月13日',to:'9月18日',note:'現在本葉2〜3枚。本葉3〜4枚・根鉢がまとまった苗からB1へ。過湿時は待つ'},
   'ブロッコリー':{from:'9月10日',to:'9月20日',note:'本葉4〜5枚の丈夫な苗を定植。3ポットの定植場所は未確定'},
   'じゃがいも（デジマ）':{from:'9月17日',to:'9月24日',note:'C0・C5へ。9ポットは根鉢を崩さず、待機4個は丸ごと植える。過湿時は見送る'},
   '玉ねぎ（てまり詩・浜笑）':{from:'11月1日',to:'11月10日',note:'C4苗床→A10。最終収穫目標170玉。苗の太さ・生育を確認'},
 };
 
-// 作業計画の編集ルール：未完了・本人管理の作業のみ。日付・畝・作業名・必要な注意を短く記載。完了履歴や指定削除済みの日常管理項目は再掲しない。
+// 作業計画の編集ルール：日程の開始日が早い順、同日は期限が早い順に表示。未完了・本人管理の作業のみ。日付・畝・作業名・必要な注意を短く記載。完了履歴や指定削除済みの日常管理項目は再掲しない。
 var PLAN_TASKS=[
   {date:'9/17〜9/24',ridge:'C0・C5',cat:'植え付け',pri:'high',task:'デジマを定植',note:'9ポットは根鉢を崩さず、待機4個は丸ごと植える。土がベタベタなら見送る'},
-  {date:'土が扱える最初の日',ridge:'プランター・畝端',cat:'植え付け',pri:'high',task:'ラディッシュ4ポットを早めに定植',note:'根鉢を崩さず定植。畑が過湿ならプランターへ'},
+  {sortDate:'9/10',date:'土が扱える最初の日',ridge:'プランター・畝端',cat:'植え付け',pri:'high',task:'ラディッシュ4ポットを早めに定植',note:'根鉢を崩さず定植。畑が過湿ならプランターへ'},
   {date:'9/5〜9/15',ridge:'B1・C7〜C10',cat:'土作り',pri:'high',task:'キャベツ・白菜・茎ブロッコリーの定植準備',note:'前作を片付け、元肥・畝立て・防虫ネットを準備。ミニトマトを残す半畝（C8仮配置）は今回撤収しない'},
-  {date:'9/10〜9/20',ridge:'B1・C9・C10',cat:'植え付け',pri:'high',task:'新藍と茎ブロッコリーを定植',note:'本葉4〜5枚の丈夫な苗から夕方に定植し、すぐ防虫ネット'},
+  {date:'9/13〜9/17',ridge:'C9・C10',cat:'植え付け',pri:'high',task:'スティックセニョールの大苗を定植',note:'本葉4〜5枚の苗から。土がほぐれる日に根鉢を崩さず植え、すぐ防虫ネット'},
+  {date:'9/13〜9/18',ridge:'B1',cat:'植え付け',pri:'high',task:'キャベツ（新藍）を定植',note:'現在本葉2〜3枚。本葉3〜4枚で根鉢がまとまった苗から。過湿時は待ち、植え付け後は防虫ネット'},
+  {date:'9/17〜9/22',ridge:'C9・C10',cat:'植え付け',pri:'high',task:'スティックセニョールの小苗を順次定植',note:'現在本葉2〜3枚の苗。葉数・根張りを確認して定植。日付だけで急がず、すぐ防虫ネット'},
   {date:'9/10〜9/25',ridge:'鉢',cat:'播種',pri:'mid',task:'三つ葉・パセリ（パラマウント）を播種',note:'古い種は多めに播く。発芽まで乾かさず、三つ葉は半日陰で管理'},
   {date:'9/11〜9/18・土の状態優先',ridge:'C3',cat:'播種',pri:'high',task:'宮重総太り大根を直播',note:'1穴3〜4粒。土がほぐれる日に播く'},
   {date:'9/20〜9/25',ridge:'C4',cat:'播種',pri:'high',task:'赤玉葱を少量播種',note:'A1用。袋の暖地・中間地のまきどき内で少量の列を確保し、品種札を立てる'},
   {date:'9/25〜9/30',ridge:'C4',cat:'播種',pri:'high',task:'晩生こがねを播種',note:'A1用。アトンと列を分けて品種札を立てる'},
-  {date:'9/15〜9/20',ridge:'C7全体・C8半畝',cat:'植え付け',pri:'high',task:'黄ごころ85を先に定植',note:'計1.5畝へ定植。株間40〜45cm。残り半畝のミニトマトは継続し、CRアルチャンは後日植える'},
+  {date:'9/15〜9/20',ridge:'C7全体・C8半畝',cat:'植え付け',pri:'high',task:'黄ごころ85を先に定植',note:'現在本葉2〜3枚。本葉4〜5枚になった苗から計1.5畝へ。株間40〜45cm。過湿時は待つ。残り半畝のミニトマトは継続'},
   {date:'9/25〜9/30',ridge:'C8半畝（仮）',cat:'管理',pri:'high',task:'残したミニトマトを収穫・撤収',note:'半畝を9月末まで継続。CRアルチャン定植前に撤収。C8は仮配置'},
   {date:'9/25〜10/1',ridge:'C8半畝（仮）',cat:'植え付け',pri:'high',task:'ミニトマト後にCRアルチャンを定植',note:'5ポットから本葉4〜5枚の苗を選び、トマト撤収後の半畝へ'},
   {date:'9/15〜9/25',ridge:'プランター・畝端',cat:'播種',pri:'mid',task:'つやひめを少量播種',note:'はつか大根（ラディッシュ）は4ポット播種済み。追加は必要量だけにし、10月の時間差播種分を残す'},
@@ -1591,6 +1593,24 @@ var PLAN_TASKS_WINTER=[
   {date:'3月〜4月',ridge:'B1',cat:'収穫',pri:'mid',task:'春キャベツ（味春）を順次収穫',note:'球を押して締まりを確認し、割れる前に食べる分から収穫する'},
 ];
 
+// 秋冬計画は9月から翌春まで。日付未指定の条件付き作業は各期間の末尾。
+function planDateKey(text,end){
+  var parts=String(text||'').split(/[〜～]/);
+  var part=end&&parts[1]?parts[1]:parts[0];
+  var m=part.match(/(\d{1,2})(?:月|\/)(?:(\d{1,2})(?:日)?)?/);
+  if(!m&&end)m=parts[0].match(/(\d{1,2})(?:月|\/)(?:(\d{1,2})(?:日)?)?/);
+  if(!m)return Infinity;
+  var month=Number(m[1]),day=m[2]?Number(m[2]):(/下旬/.test(part)?(end?new Date(2026,month,0).getDate():21):(/中旬/.test(part)||(!end&&/月中〜/.test(text)))?(end?20:11):/上旬/.test(part)?(end?10:1):(end?new Date(2026,month,0).getDate():1));
+  if(end&&/中〜下旬/.test(text))day=new Date(2026,month,0).getDate();
+  return Date.UTC(month<9?2027:2026,month-1,day);
+}
+function comparePlanDates(a,b){
+  var first=planDateKey(a.sortDate||a.date,false),second=planDateKey(b.sortDate||b.date,false);
+  if(first!==second)return first<second?-1:1;
+  var ae=planDateKey(a.date,true),be=planDateKey(b.date,true);
+  return ae===be?0:ae<be?-1:1;
+}
+
 function renderPlan(){
   var priColor={high:'#fadbd8',mid:'#fef9e7',low:'#eafaf1'};
   var priBorder={high:'#e55039',mid:'#e67e22',low:'#6ab04c'};
@@ -1639,7 +1659,10 @@ function renderPlan(){
       }
     }
   });
-  var nursery=Object.keys(nurseryByCrop).map(function(k){return nurseryByCrop[k]});
+  var nursery=Object.keys(nurseryByCrop).map(function(k){return nurseryByCrop[k]}).sort(function(a,b){
+    var ag=PLANT_GUIDE[a.crop],bg=PLANT_GUIDE[b.crop];
+    return comparePlanDates({date:ag?ag.from+'〜'+ag.to:''},{date:bg?bg.from+'〜'+bg.to:''});
+  });
   var nl=document.getElementById('nursery-list');
   if(!nursery.length){
     nl.innerHTML='<div class="empty">作業記録に育苗の登録がありません</div>';
@@ -1665,7 +1688,7 @@ function renderPlan(){
   // 作業リスト
   function renderTaskList(id,tasks){
     var pl=document.getElementById(id);
-    pl.innerHTML=tasks.map(function(t){
+    pl.innerHTML=tasks.slice().sort(comparePlanDates).map(function(t){
       return'<div style="padding:10px;border-radius:8px;margin-bottom:8px;background:'+priColor[t.pri]+';border-left:3px solid '+priBorder[t.pri]+'">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px;flex-wrap:wrap">'
       +'<div><span style="font-size:13px;font-weight:700">'+(catIcon[t.cat]||'')+' '+t.task+'</span>'
