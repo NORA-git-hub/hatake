@@ -1399,6 +1399,10 @@ function filterRec(type,btn){
 function renderRecs(){
   var list=document.getElementById('rec-list');
   var filtered=recFilter==='all'?recs:recs.filter(function(r){return r.type===recFilter});
+  filtered=filtered.slice().sort(function(a,b){
+    var dateOrder=String(b.date||'').localeCompare(String(a.date||''));
+    return dateOrder||((Number(b.id)||0)-(Number(a.id)||0));
+  });
   if(!filtered.length){list.innerHTML='<div class="empty">記録がありません</div>';return}
   list.innerHTML=filtered.map(function(r){
     var potInfo='';
